@@ -3,23 +3,40 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Clicker z Levelami i Sklepem</title>
+  <title>Clicker z Miastem i Misjami</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Clicker</h1>
-  <div id="score">0</div>
+  <h1>Clicker - Buduj Miasto</h1>
+  <div id="score">Punkty: 0</div>
   <div id="exp-level">
     EXP: <span id="exp">0</span> / <span id="expNeeded">100</span>  
     &nbsp;|&nbsp; Poziom: <span id="level">0</span>
   </div>
-  <button id="click-btn">Kliknij mnie!</button>
+  <button id="click-btn">Kliknij, aby zdobyć punkty</button>
   <button id="shop-btn">Sklep</button>
 
   <h2>Ulepszenia</h2>
   <div id="upgrades">
     <button id="upgrade-click">Ulepsz kliknięcie (koszt: 50)</button>
     <button id="upgrade-auto">Automatyczne kliknięcie (koszt: 100)</button>
+  </div>
+
+  <div id="city">
+    <h2>Miasto</h2>
+    <div class="building" id="house" data-cost="100" title="Dom - zwiększa kliknięcie +1">
+      🏠 Dom (100 pkt)
+    </div>
+    <div class="building" id="factory" data-cost="300" title="Fabryka - automatyczne kliknięcia +1/s">
+      🏭 Fabryka (300 pkt)
+    </div>
+    <div class="building" id="school" data-cost="500" title="Szkoła - bonus do EXP">
+      🏫 Szkoła (500 pkt)
+    </div>
+  </div>
+
+  <div id="missions">
+    <strong>Misja:</strong> Zbuduj Dom (Kliknij na Dom)
   </div>
 
   <div id="shop" class="hidden">
@@ -33,7 +50,6 @@
     <button id="close-shop">Zamknij sklep</button>
   </div>
 
-  <!-- Załaduj skrypt main.js jako moduł -->
   <script type="module" src="main.js"></script>
 </body>
 </html>
