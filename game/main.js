@@ -1,56 +1,59 @@
-// Import Firebase
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
+let score = parseInt(localStorage.getItem('score')) || 0;
+let clickValue = parseInt(localStorage.getItem('clickValue')) || 1;
+let autoClickValue = parseInt(localStorage.getItem('autoClickValue')) || 0;
 
-// Twój Firebase config (dostarczony przez użytkownika)
-const firebaseConfig = {
-  apiKey: "AIzaSyAfdKn7K1robyYcTk--hACy0mYYxYLwq0M",
-  authDomain: "megrateraz.firebaseapp.com",
-  projectId: "megrateraz",
-  storageBucket: "megrateraz.firebasestorage.app",
-  messagingSenderId: "930984185478",
-  appId: "1:930984185478:web:96c9b2c4d273d37f060b07",
-  measurementId: "G-0H0NQ54RQ9"
-};
+const scoreElem = document.getElementById('score');
+const clickBtn = document.getElementById('click-btn');
+const upgradeClickBtn = document.getElementById('upgrade-click');
+const upgradeAutoBtn = document.getElementById('upgrade-auto');
 
-// Inicjalizacja Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-const userDoc = doc(db, "clickerScores", "user1"); // jeden użytkownik na próbę
-
-const scoreEl = document.getElementById("score");
-const clickBtn = document.getElementById("clickBtn");
-
-let score = 0;
-
-// Wczytaj wynik z Firestore
-async function loadScore() {
-  const docSnap = await getDoc(userDoc);
-  if (docSnap.exists()) {
-    score = docSnap.data().score;
-  } else {
-    score = 0;
-  }
-  updateDisplay();
-}
-
-// Zapisz wynik do Firestore
-async function saveScore() {
-  await setDoc(userDoc, { score });
-}
-
-// Aktualizuj widok
 function updateDisplay() {
-  scoreEl.textContent = score;
+  scoreElem.textContent = score;
+  upgradeClickBtn.textContent = `Ulepsz kliknięcie (koszt: ${50 * clickValue})`;
+  upgradeAutoBtn.textContent = `Automatyczne kliknięcie (koszt: ${100 * (autoClickValue + 1)})`;
 }
 
-// Obsługa kliknięcia
-clickBtn.addEventListener("click", () => {
-  score++;
+function saveData() {
+  localStorage.setItem('score', score);
+  localStorage.setItem('clickValue', clickValue);
+  localStorage.setItem('autoClickValue', autoClickValue);
+}
+
+clickBtn.addEventListener('click', () => {
+  score += clickValue;
   updateDisplay();
-  saveScore();
+  saveData();
 });
 
-// Start
-loadScore();
+upgradeClickBtn.addEventListener('click', () => {
+  const cost = 50 * clickValue;
+  if (score >= cost) {
+    score -= cost;
+    clickValue += 1;
+    updateDisplay();
+    saveData();
+  } else {
+    alert('Za mało punktów na ulepszenie kliknięcia!');
+  }
+});
+
+upgradeAutoBtn.addEventListener('click', () => {
+  const cost = 100 * (autoClickValue + 1);
+  if (score >= cost) {
+    score -= cost;
+    autoClickValue += 1;
+    updateDisplay();
+    saveData();
+  } else {
+    alert('Za mało punktów na automatyczne kliknięcie!');
+  }
+});
+
+// Automatyczne kliknięcie co sekundę
+setInterval(() => {
+  score += autoClickValue;
+  updateDisplay();
+  saveData();
+}, 1000);
+
+updateDisplay();
