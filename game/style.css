@@ -1,3 +1,63 @@
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #121212;
+  color: #f0f0f0;
+  text-align: center;
+  padding: 50px 20px;
+  user-select: none;
+  margin: 0;
+}
+
+#shop {
+  max-width: 400px;
+  margin: 20px auto;
+  padding: 20px;
+  border: 2px solid #00bcd4;
+  border-radius: 10px;
+  background: #222;
+  display: none; /* Ukrywamy domyślnie */
+}
+
+.hidden {
+  display: none !important;
+}
+
+button {
+  font-size: 1.5rem;
+  padding: 15px 40px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(45deg, #00bcd4, #008ba3);
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 0 20px #00bcd4;
+  transition: background 0.3s ease, transform 0.2s ease;
+  margin: 10px 10px 10px 10px;
+}
+
+button:hover {
+  background: linear-gradient(45deg, #008ba3, #00bcd4);
+  transform: scale(1.05);
+}
+
+button:active {
+  transform: scale(0.95);
+  box-shadow: none;
+}
+
+#score {
+  font-size: 5rem;
+  margin: 20px 0 40px;
+  letter-spacing: 0.1em;
+  color: #ffffff;
+  text-shadow: 0 0 20px #00bcd4;
+}
+
+#exp-level {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+}
+
 #exp-level {
   margin-bottom: 20px;
   font-size: 1.2rem;
