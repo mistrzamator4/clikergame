@@ -1,47 +1,37 @@
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #121212;
-  color: #f0f0f0;
-  text-align: center;
-  padding: 50px 20px;
-  user-select: none;
+#exp-level {
+  margin-bottom: 20px;
+  font-size: 1.2rem;
 }
 
-h1 {
-  font-weight: 700;
-  font-size: 3rem;
-  margin-bottom: 30px;
-  color: #00bcd4;
-  text-shadow: 0 0 10px #00bcd4;
+#shop {
+  margin-top: 30px;
+  border: 2px solid #00bcd4;
+  padding: 20px;
+  border-radius: 10px;
+  background: #222;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-#score {
-  font-size: 5rem;
-  margin: 20px 0 40px;
-  letter-spacing: 0.1em;
-  color: #ffffff;
-  text-shadow: 0 0 20px #00bcd4;
+.hidden {
+  display: none;
 }
 
-button {
-  font-size: 1.5rem;
-  padding: 15px 40px;
-  margin: 10px;
+.buy-item {
+  display: block;
+  margin: 10px auto;
+  padding: 15px 30px;
+  font-size: 1rem;
+  border-radius: 10px;
   border: none;
-  border-radius: 12px;
-  background: linear-gradient(45deg, #00bcd4, #008ba3);
+  background: linear-gradient(45deg, #00796b, #004d40);
   color: white;
   cursor: pointer;
-  box-shadow: 0 0 20px #00bcd4;
-  transition: background 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 0 15px #00796b;
+  transition: background 0.3s ease;
 }
 
-button:hover {
-  background: linear-gradient(45deg, #008ba3, #00bcd4);
-  transform: scale(1.05);
-}
-
-button:active {
-  transform: scale(0.95);
-  box-shadow: none;
+.buy-item:hover {
+  background: linear-gradient(45deg, #004d40, #00796b);
 }
