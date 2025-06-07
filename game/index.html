@@ -33,24 +33,7 @@
     <button id="close-shop">Zamknij sklep</button>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-analytics.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBfMD9KaoaiBse0JT450AW3d4hr6a-iLeQ",
-      authDomain: "clickerprostagra.firebaseapp.com",
-      projectId: "clickerprostagra",
-      storageBucket: "clickerprostagra.firebasestorage.app",
-      messagingSenderId: "918100413777",
-      appId: "1:918100413777:web:27b56666de3d3eb1421770",
-      measurementId: "G-TNJ32PDHHR"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-  </script>
-
-  <script src="main.js"></script>
+  <!-- Załaduj skrypt main.js jako moduł -->
+  <script type="module" src="main.js"></script>
 </body>
 </html>
