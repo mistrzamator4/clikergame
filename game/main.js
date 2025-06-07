@@ -1,11 +1,10 @@
 // main.js
 
-// 1) Importy Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-analytics.js";
 
-// 2) Twoja konfiguracja Firebase (z index.html)
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyBfMD9KaoaiBse0JT450AW3d4hr6a-iLeQ",
   authDomain: "clickerprostagra.firebaseapp.com",
@@ -16,12 +15,11 @@ const firebaseConfig = {
   measurementId: "G-TNJ32PDHHR"
 };
 
-// 3) Inicjalizacja Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const db = getFirestore(app);
 
-// 4) Unikalny identyfikator gracza
+// Unique player ID
 let playerId = localStorage.getItem('playerId');
 if (!playerId) {
   playerId = Math.random().toString(36).substring(2, 10);
@@ -29,14 +27,14 @@ if (!playerId) {
 }
 const userDoc = doc(db, "players", playerId);
 
-// 5) Początkowe wartości
+// Game state variables
 let score = 0;
 let clickValue = 1;
 let autoClickValue = 0;
 let exp = 0;
 let level = 0;
 
-// 6) Referencje do DOM
+// DOM elements
 const scoreEl = document.getElementById('score');
 const expEl = document.getElementById('exp');
 const levelEl = document.getElementById('level');
@@ -46,15 +44,21 @@ const upgradeClickBtn = document.getElementById('upgrade-click');
 const upgradeAutoBtn = document.getElementById('upgrade-auto');
 const shopBtn = document.getElementById('shop-btn');
 const shopEl = document.getElementById('shop');
-const closeShopBtn = document.getElementById('close-shop');
-const buyItems = document.querySelectorAll('.buy-item');
 
-// 7) Obliczanie EXP potrzebnego na poziom
+// Upgrades available in the shop
+const upgrades = [
+  { id: 'extraClick', name: '+1 do kliknięcia', cost: 200, amount: 1 },
+  { id: 'autoClick', name: '+2 automatyczne kliknięcia', cost: 500, amount: 2 },
+  { id: 'megaClick', name: '+10 do kliknięcia', cost: 2000, amount: 10 },
+  { id: 'megaAutoClick', name: '+10 automatyczne kliknięcia', cost: 4000, amount: 10 },
+];
+
+// Calculate EXP needed for next level (exponential growth)
 function expNeededForLevel(lvl) {
-  return 100 * (lvl + 1);
+  return Math.floor(100 * Math.pow(1.5, lvl));
 }
 
-// 8) Aktualizacja widoku
+// Update UI elements
 function updateDisplay() {
   scoreEl.textContent = score;
   expEl.textContent = exp;
@@ -64,7 +68,7 @@ function updateDisplay() {
   upgradeAutoBtn.textContent = `Automatyczne kliknięcie (koszt: ${100 * (autoClickValue + 1)})`;
 }
 
-// 9) Zapis stanu gry do Firestore
+// Save progress to Firestore
 async function saveProgress() {
   try {
     await setDoc(userDoc, {
@@ -79,7 +83,7 @@ async function saveProgress() {
   }
 }
 
-// 10) Wczytywanie stanu gry z Firestore
+// Load progress from Firestore
 async function loadProgress() {
   try {
     const snap = await getDoc(userDoc);
@@ -97,17 +101,27 @@ async function loadProgress() {
   updateDisplay();
 }
 
-// 11) Sprawdzanie awansu poziomu
+// Animate level up effect
+function animateLevelUp() {
+  levelEl.classList.add('level-up');
+  setTimeout(() => levelEl.classList.remove('level-up'), 1000);
+}
+
+// Check if player can level up, allow multiple level ups if enough EXP
 function checkLevelUp() {
-  const needed = expNeededForLevel(level);
-  if (exp >= needed) {
-    exp -= needed;
+  let leveledUp = false;
+  while (exp >= expNeededForLevel(level)) {
+    exp -= expNeededForLevel(level);
     level++;
+    leveledUp = true;
+  }
+  if (leveledUp) {
+    animateLevelUp();
     alert(`Gratulacje! Wbiłeś poziom ${level}!`);
   }
 }
 
-// 12) Obsługa kliknięcia
+// Handle click button
 clickBtn.addEventListener('click', () => {
   score += clickValue;
   exp += clickValue;
@@ -116,7 +130,7 @@ clickBtn.addEventListener('click', () => {
   saveProgress();
 });
 
-// 13) Ulepszenia
+// Handle upgrades
 upgradeClickBtn.addEventListener('click', () => {
   const cost = 50 * clickValue;
   if (score >= cost) {
@@ -141,7 +155,7 @@ upgradeAutoBtn.addEventListener('click', () => {
   }
 });
 
-// 14) Auto-click co sekundę
+// Auto-click every second
 setInterval(() => {
   if (autoClickValue > 0) {
     score += autoClickValue;
@@ -152,32 +166,48 @@ setInterval(() => {
   }
 }, 1000);
 
-// 15) Sklep
-shopBtn.addEventListener('click', () => shopEl.classList.remove('hidden'));
-closeShopBtn.addEventListener('click', () => shopEl.classList.add('hidden'));
-
-buyItems.forEach(btn => {
-  btn.addEventListener('click', () => {
-    const cost = +btn.dataset.cost;
-    const effect = btn.dataset.effect;
-    const amt = +btn.dataset.amount;
-    if (score >= cost) {
-      score -= cost;
-      if (effect === 'extraClick') clickValue += amt;
-      else if (effect === 'autoClick') autoClickValue += amt;
-      updateDisplay();
-      saveProgress();
-      alert('Zakupiono!');
-    } else {
-      alert('Za mało punktów!');
-    }
+// Shop UI render and functionality
+function renderShopItems() {
+  shopEl.innerHTML = '<h2>Sklep</h2>';
+  upgrades.forEach(upg => {
+    shopEl.innerHTML += `<button class="buy-item" data-cost="${upg.cost}" data-effect="${upg.id}" data-amount="${upg.amount}">
+      Kup ${upg.name} (${upg.cost} punktów)
+    </button>`;
   });
-});
+  shopEl.innerHTML += `<button id="close-shop">Zamknij sklep</button>`;
 
-// 16) Start: wczytaj i pokaż
-async function startGame() {
-  await loadProgress();
-  updateDisplay();
+  document.getElementById('close-shop').addEventListener('click', () => {
+    shopEl.classList.add('hidden');
+  });
+
+  document.querySelectorAll('.buy-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cost = +btn.dataset.cost;
+      const effect = btn.dataset.effect;
+      const amt = +btn.dataset.amount;
+      if (score >= cost) {
+        score -= cost;
+        if (effect === 'extraClick' || effect === 'megaClick') clickValue += amt;
+        else if (effect === 'autoClick' || effect === 'megaAutoClick') autoClickValue += amt;
+
+        updateDisplay();
+        saveProgress();
+        alert('Zakupiono!');
+      } else {
+        alert('Za mało punktów!');
+      }
+    });
+  });
 }
 
-startGame();
+// Shop button toggles
+shopBtn.addEventListener('click', () => {
+  renderShopItems();
+  shopEl.classList.remove('hidden');
+});
+
+// Initial load
+(async () => {
+  await loadProgress();
+  updateDisplay();
+})();
