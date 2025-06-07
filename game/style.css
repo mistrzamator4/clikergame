@@ -95,3 +95,13 @@ button:active {
 .buy-item:hover {
   background: linear-gradient(45deg, #004d40, #00796b);
 }
+.level-up {
+  animation: levelUpFlash 1s ease-in-out;
+  color: gold;
+  font-weight: bold;
+}
+
+@keyframes levelUpFlash {
+  0%, 100% { color: gold; text-shadow: 0 0 10px gold; }
+  50% { color: white; text-shadow: none; }
+}
