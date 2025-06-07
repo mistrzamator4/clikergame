@@ -2,15 +2,21 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8" />
-  <title>Clicker Firebase</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Clicker</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <h1>Clicker</h1>
+  <div id="score">0</div>
+  <button id="click-btn">Kliknij mnie!</button>
 
-  <h1>Clicker z Firebase</h1>
-  <div id="score">Ładowanie...</div>
-  <button id="clickBtn">Kliknij mnie!</button>
+  <h2>Ulepszenia</h2>
+  <div id="upgrades">
+    <button id="upgrade-click">Ulepsz kliknięcie (koszt: 50)</button>
+    <button id="upgrade-auto">Automatyczne kliknięcie (koszt: 100)</button>
+  </div>
 
-  <script type="module" src="main.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>
