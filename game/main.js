@@ -1,9 +1,9 @@
 // main.js
 
 // 1) Importy Firebase
-import { initializeApp }   from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
-import { getAnalytics }    from "https://www.gstatic.com/firebasejs/11.9.0/firebase-analytics.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-analytics.js";
 
 // 2) Twoja konfiguracja Firebase (z index.html)
 const firebaseConfig = {
@@ -17,9 +17,9 @@ const firebaseConfig = {
 };
 
 // 3) Inicjalizacja Firebase
-const app       = initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
-const db        = getFirestore(app);
+const db = getFirestore(app);
 
 // 4) Unikalny identyfikator gracza
 let playerId = localStorage.getItem('playerId');
@@ -30,24 +30,24 @@ if (!playerId) {
 const userDoc = doc(db, "players", playerId);
 
 // 5) Początkowe wartości
-let score          = 0;
-let clickValue     = 1;
+let score = 0;
+let clickValue = 1;
 let autoClickValue = 0;
-let exp            = 0;
-let level          = 0;
+let exp = 0;
+let level = 0;
 
 // 6) Referencje do DOM
-const scoreEl        = document.getElementById('score');
-const expEl          = document.getElementById('exp');
-const levelEl        = document.getElementById('level');
-const expNeededEl    = document.getElementById('expNeeded');
-const clickBtn       = document.getElementById('click-btn');
-const upgradeClickBtn= document.getElementById('upgrade-click');
+const scoreEl = document.getElementById('score');
+const expEl = document.getElementById('exp');
+const levelEl = document.getElementById('level');
+const expNeededEl = document.getElementById('expNeeded');
+const clickBtn = document.getElementById('click-btn');
+const upgradeClickBtn = document.getElementById('upgrade-click');
 const upgradeAutoBtn = document.getElementById('upgrade-auto');
-const shopBtn        = document.getElementById('shop-btn');
-const shopEl         = document.getElementById('shop');
-const closeShopBtn   = document.getElementById('close-shop');
-const buyItems       = document.querySelectorAll('.buy-item');
+const shopBtn = document.getElementById('shop-btn');
+const shopEl = document.getElementById('shop');
+const closeShopBtn = document.getElementById('close-shop');
+const buyItems = document.querySelectorAll('.buy-item');
 
 // 7) Obliczanie EXP potrzebnego na poziom
 function expNeededForLevel(lvl) {
@@ -56,12 +56,12 @@ function expNeededForLevel(lvl) {
 
 // 8) Aktualizacja widoku
 function updateDisplay() {
-  scoreEl.textContent         = score;
-  expEl.textContent           = exp;
-  levelEl.textContent         = level;
-  expNeededEl.textContent     = expNeededForLevel(level);
+  scoreEl.textContent = score;
+  expEl.textContent = exp;
+  levelEl.textContent = level;
+  expNeededEl.textContent = expNeededForLevel(level);
   upgradeClickBtn.textContent = `Ulepsz kliknięcie (koszt: ${50 * clickValue})`;
-  upgradeAutoBtn.textContent  = `Automatyczne kliknięcie (koszt: ${100 * (autoClickValue + 1)})`;
+  upgradeAutoBtn.textContent = `Automatyczne kliknięcie (koszt: ${100 * (autoClickValue + 1)})`;
 }
 
 // 9) Zapis stanu gry do Firestore
@@ -74,7 +74,7 @@ async function saveProgress() {
       exp,
       level
     });
-  } catch(e) {
+  } catch (e) {
     console.error("Błąd zapisu do Firebase:", e);
   }
 }
@@ -85,13 +85,13 @@ async function loadProgress() {
     const snap = await getDoc(userDoc);
     if (snap.exists()) {
       const data = snap.data();
-      score          = data.score || 0;
-      clickValue     = data.clickValue || 1;
+      score = data.score || 0;
+      clickValue = data.clickValue || 1;
       autoClickValue = data.autoClickValue || 0;
-      exp            = data.exp || 0;
-      level          = data.level || 0;
+      exp = data.exp || 0;
+      level = data.level || 0;
     }
-  } catch(e) {
+  } catch (e) {
     console.error("Błąd wczytywania z Firebase:", e);
   }
   updateDisplay();
@@ -110,7 +110,7 @@ function checkLevelUp() {
 // 12) Obsługa kliknięcia
 clickBtn.addEventListener('click', () => {
   score += clickValue;
-  exp   += clickValue;
+  exp += clickValue;
   checkLevelUp();
   updateDisplay();
   saveProgress();
@@ -145,7 +145,7 @@ upgradeAutoBtn.addEventListener('click', () => {
 setInterval(() => {
   if (autoClickValue > 0) {
     score += autoClickValue;
-    exp   += autoClickValue;
+    exp += autoClickValue;
     checkLevelUp();
     updateDisplay();
     saveProgress();
@@ -158,13 +158,13 @@ closeShopBtn.addEventListener('click', () => shopEl.classList.add('hidden'));
 
 buyItems.forEach(btn => {
   btn.addEventListener('click', () => {
-    const cost   = +btn.dataset.cost;
+    const cost = +btn.dataset.cost;
     const effect = btn.dataset.effect;
-    const amt    = +btn.dataset.amount;
+    const amt = +btn.dataset.amount;
     if (score >= cost) {
       score -= cost;
-      if (effect === 'extraClick')     clickValue     += amt;
-      else if (effect === 'autoClick') autoClickValue+= amt;
+      if (effect === 'extraClick') clickValue += amt;
+      else if (effect === 'autoClick') autoClickValue += amt;
       updateDisplay();
       saveProgress();
       alert('Zakupiono!');
@@ -175,5 +175,9 @@ buyItems.forEach(btn => {
 });
 
 // 16) Start: wczytaj i pokaż
-await loadProgress();
-updateDisplay();
+async function startGame() {
+  await loadProgress();
+  updateDisplay();
+}
+
+startGame();
