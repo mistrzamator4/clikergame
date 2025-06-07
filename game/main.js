@@ -1,10 +1,8 @@
 // main.js
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-analytics.js";
 
-// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyBfMD9KaoaiBse0JT450AW3d4hr6a-iLeQ",
   authDomain: "clickerprostagra.firebaseapp.com",
@@ -19,7 +17,6 @@ const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const db = getFirestore(app);
 
-// Unique player ID
 let playerId = localStorage.getItem('playerId');
 if (!playerId) {
   playerId = Math.random().toString(36).substring(2, 10);
@@ -27,14 +24,13 @@ if (!playerId) {
 }
 const userDoc = doc(db, "players", playerId);
 
-// Game state variables
 let score = 0;
 let clickValue = 1;
 let autoClickValue = 0;
 let exp = 0;
 let level = 0;
+let expBonus = 0;
 
-// DOM elements
 const scoreEl = document.getElementById('score');
 const expEl = document.getElementById('exp');
 const levelEl = document.getElementById('level');
@@ -44,31 +40,44 @@ const upgradeClickBtn = document.getElementById('upgrade-click');
 const upgradeAutoBtn = document.getElementById('upgrade-auto');
 const shopBtn = document.getElementById('shop-btn');
 const shopEl = document.getElementById('shop');
+const closeShopBtn = document.getElementById('close-shop');
+const buyItems = document.querySelectorAll('.buy-item');
 
-// Upgrades available in the shop
-const upgrades = [
-  { id: 'extraClick', name: '+1 do kliknięcia', cost: 200, amount: 1 },
-  { id: 'autoClick', name: '+2 automatyczne kliknięcia', cost: 500, amount: 2 },
-  { id: 'megaClick', name: '+10 do kliknięcia', cost: 2000, amount: 10 },
-  { id: 'megaAutoClick', name: '+10 automatyczne kliknięcia', cost: 4000, amount: 10 },
-];
+const cityEls = {
+  house: document.getElementById('house'),
+  factory: document.getElementById('factory'),
+  school: document.getElementById('school')
+};
 
-// Calculate EXP needed for next level (exponential growth)
+const buildings = {
+  house: { built: false, cost: 100, effect: () => { clickValue += 1; } },
+  factory: { built: false, cost: 300, effect: () => { autoClickValue += 1; } },
+  school: { built: false, cost: 500, effect: () => { expBonus += 10; } }
+};
+
 function expNeededForLevel(lvl) {
-  return Math.floor(100 * Math.pow(1.5, lvl));
+  return 100 * (lvl + 1);
 }
 
-// Update UI elements
 function updateDisplay() {
-  scoreEl.textContent = score;
-  expEl.textContent = exp;
+  scoreEl.textContent = `Punkty: ${score}`;
+  expEl.textContent = Math.floor(exp);
   levelEl.textContent = level;
   expNeededEl.textContent = expNeededForLevel(level);
   upgradeClickBtn.textContent = `Ulepsz kliknięcie (koszt: ${50 * clickValue})`;
   upgradeAutoBtn.textContent = `Automatyczne kliknięcie (koszt: ${100 * (autoClickValue + 1)})`;
+
+  for (const key in buildings) {
+    if (buildings[key].built) {
+      cityEls[key].classList.add('built');
+      cityEls[key].style.opacity = '1';
+    } else {
+      cityEls[key].classList.remove('built');
+      cityEls[key].style.opacity = '0.4';
+    }
+  }
 }
 
-// Save progress to Firestore
 async function saveProgress() {
   try {
     await setDoc(userDoc, {
@@ -76,14 +85,15 @@ async function saveProgress() {
       clickValue,
       autoClickValue,
       exp,
-      level
+      level,
+      expBonus,
+      buildings: Object.fromEntries(Object.entries(buildings).map(([k,v]) => [k, v.built]))
     });
   } catch (e) {
     console.error("Błąd zapisu do Firebase:", e);
   }
 }
 
-// Load progress from Firestore
 async function loadProgress() {
   try {
     const snap = await getDoc(userDoc);
@@ -94,43 +104,38 @@ async function loadProgress() {
       autoClickValue = data.autoClickValue || 0;
       exp = data.exp || 0;
       level = data.level || 0;
+      expBonus = data.expBonus || 0;
+      if (data.buildings) {
+        for (const key in data.buildings) {
+          if (buildings[key]) buildings[key].built = data.buildings[key];
+        }
+      }
     }
   } catch (e) {
     console.error("Błąd wczytywania z Firebase:", e);
   }
   updateDisplay();
+  updateMission();
 }
 
-// Animate level up effect
-function animateLevelUp() {
-  levelEl.classList.add('level-up');
-  setTimeout(() => levelEl.classList.remove('level-up'), 1000);
-}
-
-// Check if player can level up, allow multiple level ups if enough EXP
 function checkLevelUp() {
-  let leveledUp = false;
-  while (exp >= expNeededForLevel(level)) {
-    exp -= expNeededForLevel(level);
+  const needed = expNeededForLevel(level);
+  if (exp >= needed) {
+    exp -= needed;
     level++;
-    leveledUp = true;
-  }
-  if (leveledUp) {
-    animateLevelUp();
     alert(`Gratulacje! Wbiłeś poziom ${level}!`);
   }
 }
 
-// Handle click button
 clickBtn.addEventListener('click', () => {
   score += clickValue;
-  exp += clickValue;
+  exp += clickValue * (1 + expBonus / 100);
   checkLevelUp();
   updateDisplay();
   saveProgress();
 });
 
-// Handle upgrades
+// Ulepszenia (tak jak w Twoim kodzie)
 upgradeClickBtn.addEventListener('click', () => {
   const cost = 50 * clickValue;
   if (score >= cost) {
@@ -155,59 +160,7 @@ upgradeAutoBtn.addEventListener('click', () => {
   }
 });
 
-// Auto-click every second
+// Automatyczne kliknięcia
 setInterval(() => {
   if (autoClickValue > 0) {
-    score += autoClickValue;
-    exp += autoClickValue;
-    checkLevelUp();
-    updateDisplay();
-    saveProgress();
-  }
-}, 1000);
-
-// Shop UI render and functionality
-function renderShopItems() {
-  shopEl.innerHTML = '<h2>Sklep</h2>';
-  upgrades.forEach(upg => {
-    shopEl.innerHTML += `<button class="buy-item" data-cost="${upg.cost}" data-effect="${upg.id}" data-amount="${upg.amount}">
-      Kup ${upg.name} (${upg.cost} punktów)
-    </button>`;
-  });
-  shopEl.innerHTML += `<button id="close-shop">Zamknij sklep</button>`;
-
-  document.getElementById('close-shop').addEventListener('click', () => {
-    shopEl.classList.add('hidden');
-  });
-
-  document.querySelectorAll('.buy-item').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const cost = +btn.dataset.cost;
-      const effect = btn.dataset.effect;
-      const amt = +btn.dataset.amount;
-      if (score >= cost) {
-        score -= cost;
-        if (effect === 'extraClick' || effect === 'megaClick') clickValue += amt;
-        else if (effect === 'autoClick' || effect === 'megaAutoClick') autoClickValue += amt;
-
-        updateDisplay();
-        saveProgress();
-        alert('Zakupiono!');
-      } else {
-        alert('Za mało punktów!');
-      }
-    });
-  });
-}
-
-// Shop button toggles
-shopBtn.addEventListener('click', () => {
-  renderShopItems();
-  shopEl.classList.remove('hidden');
-});
-
-// Initial load
-(async () => {
-  await loadProgress();
-  updateDisplay();
-})();
+    score
