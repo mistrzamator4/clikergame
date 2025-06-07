@@ -3,18 +3,34 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Clicker</title>
+  <title>Clicker z Levelami i Sklepem</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <h1>Clicker</h1>
   <div id="score">0</div>
+  <div id="exp-level">
+    EXP: <span id="exp">0</span> / <span id="expNeeded">100</span>  
+    &nbsp;|&nbsp; Poziom: <span id="level">0</span>
+  </div>
   <button id="click-btn">Kliknij mnie!</button>
+  <button id="shop-btn">Sklep</button>
 
   <h2>Ulepszenia</h2>
   <div id="upgrades">
     <button id="upgrade-click">Ulepsz kliknięcie (koszt: 50)</button>
     <button id="upgrade-auto">Automatyczne kliknięcie (koszt: 100)</button>
+  </div>
+
+  <div id="shop" class="hidden">
+    <h2>Sklep</h2>
+    <button class="buy-item" data-cost="200" data-effect="extraClick" data-amount="1">
+      Kup +1 do kliknięcia (200 punktów)
+    </button>
+    <button class="buy-item" data-cost="500" data-effect="autoClick" data-amount="2">
+      Kup +2 automatyczne kliknięcia (500 punktów)
+    </button>
+    <button id="close-shop">Zamknij sklep</button>
   </div>
 
   <script src="main.js"></script>
