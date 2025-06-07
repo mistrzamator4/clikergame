@@ -24,8 +24,9 @@ h1 {
 }
 
 button {
-  font-size: 2rem;
-  padding: 20px 60px;
+  font-size: 1.5rem;
+  padding: 15px 40px;
+  margin: 10px;
   border: none;
   border-radius: 12px;
   background: linear-gradient(45deg, #00bcd4, #008ba3);
