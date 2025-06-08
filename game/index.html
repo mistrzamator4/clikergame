@@ -1,56 +1,62 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Clicker z Misjami</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Clicker PRO - Mega Rozbudowana Gra</title>
+<link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Clicker - Buduj Miasto</h1>
-  <div id="score">Punkty: 0</div>
-  <div id="exp-level">
-    EXP: <span id="exp">0</span> / <span id="expNeeded">100</span>  
-    &nbsp;|&nbsp; Poziom: <span id="level">0</span>
-  </div>
-  <button id="click-btn">Kliknij, aby zdobyć punkty</button>
-  <button id="shop-btn">Sklep</button>
-
-  <h2>Ulepszenia</h2>
-  <div id="upgrades">
-    <button id="upgrade-click">Ulepsz kliknięcie (koszt: 50)</button>
-    <button id="upgrade-auto">Automatyczne kliknięcie (koszt: 100)</button>
-  </div>
-
-  <div id="city">
-    <h2>Miasto</h2>
-    <div class="building" id="house" data-cost="100" title="Dom - zwiększa kliknięcie +1">
-      🏠 Dom (100 pkt)
+  <header>
+    <h1>Clicker PRO</h1>
+    <div id="score-container">
+      Punkty: <span id="score">0</span> | EXP: <span id="exp">0</span> / <span id="expNeeded">100</span> | Poziom: <span id="level">0</span> | Waluta Premium: <span id="premium-currency">0</span>
     </div>
-    <div class="building" id="factory" data-cost="300" title="Fabryka - automatyczne kliknięcia +1/s">
-      🏭 Fabryka (300 pkt)
-    </div>
-    <div class="building" id="school" data-cost="500" title="Szkoła - bonus do EXP">
-      🏫 Szkoła (500 pkt)
-    </div>
-  </div>
+  </header>
 
-  <div id="missions">
-    <strong>Misja:</strong> Zbuduj Dom (Kliknij na Dom)
-  </div>
+  <main>
+    <button id="click-btn" class="big-btn">Kliknij mnie!</button>
+    <section id="upgrades">
+      <h2>Ulepszenia</h2>
+      <button id="upgrade-click">Ulepsz kliknięcie (koszt: 50)</button>
+      <button id="upgrade-auto">Automatyczne kliknięcie (koszt: 100)</button>
+      <button id="buy-double-exp">Kup x2 EXP (koszt: 300 prem.)</button>
+    </section>
 
-  <div id="shop" class="hidden">
-    <h2>Sklep</h2>
-    <button class="buy-item" data-cost="200" data-effect="extraClick" data-amount="1">
-      Kup +1 do kliknięcia (200 punktów)
-    </button>
-    <button class="buy-item" data-cost="500" data-effect="autoClick" data-amount="2">
-      Kup +2 automatyczne kliknięcia (500 punktów)
-    </button>
-    <button id="close-shop">Zamknij sklep</button>
-  </div>
+    <section id="missions">
+      <h2>Misje dzienne</h2>
+      <ul id="missions-list"></ul>
+    </section>
 
-  <!-- ładowanie modułu JS -->
+    <section id="achievements">
+      <h2>Osiągnięcia</h2>
+      <ul id="achievements-list"></ul>
+    </section>
+
+    <section id="shop" class="hidden">
+      <h2>Sklep</h2>
+      <button class="buy-item" data-cost="200" data-effect="extraClick" data-amount="1">
+        Kup +1 do kliknięcia (200 punktów)
+      </button>
+      <button class="buy-item" data-cost="500" data-effect="autoClick" data-amount="2">
+        Kup +2 automatyczne kliknięcia (500 punktów)
+      </button>
+      <button class="buy-item" data-cost="1000" data-effect="premium" data-amount="10">
+        Kup 10 waluty premium (1000 punktów)
+      </button>
+      <button id="close-shop">Zamknij sklep</button>
+    </section>
+
+    <button id="shop-btn">Otwórz sklep</button>
+  </main>
+
+  <div id="notification" class="hidden"></div>
+
+  <script type="module" src="firebase.js"></script>
+  <script type="module" src="utils.js"></script>
+  <script type="module" src="achievements.js"></script>
+  <script type="module" src="missions.js"></script>
+  <script type="module" src="shop.js"></script>
   <script type="module" src="main.js"></script>
 </body>
 </html>
