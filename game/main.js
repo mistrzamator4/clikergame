@@ -1,3 +1,6 @@
+// main.js
+
+// Firebase imports
 import { initializeApp }   from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
 import { getAnalytics }    from "https://www.gstatic.com/firebasejs/11.9.0/firebase-analytics.js";
@@ -13,10 +16,12 @@ const firebaseConfig = {
   measurementId: "G-TNJ32PDHHR"
 };
 
-const app       = initializeApp(firebaseConfig);
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
-const db        = getFirestore(app);
+const db = getFirestore(app);
 
+// Player ID setup
 let playerId = localStorage.getItem('playerId');
 if (!playerId) {
   playerId = Math.random().toString(36).substring(2, 10);
@@ -24,211 +29,315 @@ if (!playerId) {
 }
 const userDoc = doc(db, "players", playerId);
 
-let score          = 0;
-let clickValue     = 1;
-let autoClickValue = 0;
-let exp            = 0;
-let level          = 0;
+// Game state
+let state = {
+  score: 0,
+  clickValue: 1,
+  autoClickValue: 0,
+  exp: 0,
+  level: 0,
+  prestigeLevel: 0,
+  clickBoostActive: false,
+  clickBoostMultiplier: 2,
+  clickBoostTimeLeft: 0,
+  missions: [],
+  achievements: [],
+  achievementsUnlocked: new Set()
+};
 
-// Missions system
-const missionsData = [
-  { id: 1, desc: "Kliknij 100 razy", goal: 100, progress: 0, reward: 50, completed: false },
-  { id: 2, desc: "Zdobądź 500 punktów", goal: 500, progress: 0, reward: 100, completed: false },
-  { id: 3, desc: "Osiągnij poziom 5", goal: 5, progress: 0, reward: 150, completed: false },
-  { id: 4, desc: "Kup ulepszenie kliknięcia", goal: 1, progress: 0, reward: 200, completed: false, checkUpgrade: true }
-];
+// DOM Elements
+const scoreEl = document.getElementById('score');
+const expEl = document.getElementById('exp');
+const levelEl = document.getElementById('level');
+const expNeededEl = document.getElementById('expNeeded');
+const prestigeLevelEl = document.getElementById('prestigeLevel');
 
-const scoreEl        = document.getElementById('score');
-const expEl          = document.getElementById('exp');
-const levelEl        = document.getElementById('level');
-const expNeededEl    = document.getElementById('expNeeded');
-const clickBtn       = document.getElementById('click-btn');
-const upgradeClickBtn= document.getElementById('upgrade-click');
+const clickBtn = document.getElementById('click-btn');
+const upgradeClickBtn = document.getElementById('upgrade-click');
 const upgradeAutoBtn = document.getElementById('upgrade-auto');
-const shopBtn        = document.getElementById('shop-btn');
-const shopEl         = document.getElementById('shop');
-const closeShopBtn   = document.getElementById('close-shop');
-const buyItems       = document.querySelectorAll('.buy-item');
-const missionsListEl = document.getElementById('missions-list');
-const notificationsEl= document.getElementById('notifications');
+const shopItems = document.querySelectorAll('.buy-item');
+const missionListEl = document.getElementById('mission-list');
+const achievementListEl = document.getElementById('achievement-list');
+const prestigeBtn = document.getElementById('prestige-btn');
+const notificationEl = document.getElementById('notification');
 
+const clickSound = document.getElementById('click-sound');
+const upgradeSound = document.getElementById('upgrade-sound');
+const achievementSound = document.getElementById('achievement-sound');
+const prestigeSound = document.getElementById('prestige-sound');
+
+// Utility
+function showNotification(message, time = 3000) {
+  notificationEl.textContent = message;
+  notificationEl.classList.remove('hidden');
+  setTimeout(() => notificationEl.classList.add('hidden'), time);
+}
+
+// Calculate exp needed for next level
 function expNeededForLevel(lvl) {
-  return 100 * (lvl + 1);
+  return Math.floor(100 * Math.pow(1.5, lvl));
 }
 
+// Update UI display
 function updateDisplay() {
-  scoreEl.textContent         = score;
-  expEl.textContent           = exp;
-  levelEl.textContent         = level;
-  expNeededEl.textContent     = expNeededForLevel(level);
-  upgradeClickBtn.textContent = `Ulepsz kliknięcie (koszt: ${50 * clickValue})`;
-  upgradeAutoBtn.textContent  = `Automatyczne kliknięcie (koszt: ${100 * (autoClickValue + 1)})`;
+  scoreEl.textContent = Math.floor(state.score);
+  expEl.textContent = Math.floor(state.exp);
+  levelEl.textContent = state.level;
+  expNeededEl.textContent = expNeededForLevel(state.level);
+  prestigeLevelEl.textContent = state.prestigeLevel;
+
+  upgradeClickBtn.textContent = `Ulepsz kliknięcie (koszt: ${upgradeClickCost()})`;
+  upgradeAutoBtn.textContent = `Automatyczne kliknięcie (koszt: ${upgradeAutoCost()})`;
 }
 
-function showNotification(text) {
-  const notif = document.createElement('div');
-  notif.className = 'notification';
-  notif.textContent = text;
-  notificationsEl.appendChild(notif);
-  setTimeout(() => notif.remove(), 4000);
+// Upgrade costs (dynamic scaling)
+function upgradeClickCost() {
+  return 50 * Math.pow(1.7, state.clickValue - 1);
 }
 
-function saveGame() {
-  setDoc(userDoc, {
-    score,
-    clickValue,
-    autoClickValue,
-    exp,
-    level,
-    missionsData
-  }).catch(console.error);
+function upgradeAutoCost() {
+  return 100 * Math.pow(1.8, state.autoClickValue);
 }
 
-async function loadGame() {
-  const docSnap = await getDoc(userDoc);
-  if (docSnap.exists()) {
-    const data = docSnap.data();
-    score = data.score || 0;
-    clickValue = data.clickValue || 1;
-    autoClickValue = data.autoClickValue || 0;
-    exp = data.exp || 0;
-    level = data.level || 0;
-    if (data.missionsData) {
-      data.missionsData.forEach(m => {
-        const mission = missionsData.find(md => md.id === m.id);
-        if (mission) {
-          mission.progress = m.progress;
-          mission.completed = m.completed;
-        }
-      });
-    }
-  }
-  updateDisplay();
-  renderMissions();
-}
+// Click handler
+function onClick() {
+  const value = state.clickBoostActive ? state.clickValue * state.clickBoostMultiplier : state.clickValue;
+  state.score += value;
+  state.exp += value;
 
-function gainExp(amount) {
-  exp += amount;
-  while (exp >= expNeededForLevel(level)) {
-    exp -= expNeededForLevel(level);
-    level++;
-    showNotification(`Poziom ${level}!`);
-  }
-  updateDisplay();
-  saveGame();
-}
+  clickSound.currentTime = 0;
+  clickSound.play();
 
-function checkMissions() {
-  missionsData.forEach(mission => {
-    if (mission.completed) return;
-    if (mission.checkUpgrade && clickValue > 1) {
-      mission.completed = true;
-      score += mission.reward;
-      showNotification(`Misja ukończona: ${mission.desc} +${mission.reward} pkt`);
-    } else if (!mission.checkUpgrade) {
-      if (mission.id === 1 && mission.progress >= mission.goal) {
-        mission.completed = true;
-        score += mission.reward;
-        showNotification(`Misja ukończona: ${mission.desc} +${mission.reward} pkt`);
-      }
-      if (mission.id === 2 && score >= mission.goal) {
-        mission.completed = true;
-        score += mission.reward;
-        showNotification(`Misja ukończona: ${mission.desc} +${mission.reward} pkt`);
-      }
-      if (mission.id === 3 && level >= mission.goal) {
-        mission.completed = true;
-        score += mission.reward;
-        showNotification(`Misja ukończona: ${mission.desc} +${mission.reward} pkt`);
-      }
-    }
-  });
-  updateDisplay();
-  renderMissions();
-  saveGame();
-}
-
-function renderMissions() {
-  missionsListEl.innerHTML = '';
-  missionsData.forEach(mission => {
-    const li = document.createElement('li');
-    li.textContent = mission.desc + (mission.completed ? ' (ukończona)' : ` (${mission.progress}/${mission.goal})`);
-    if (mission.completed) li.classList.add('completed');
-    missionsListEl.appendChild(li);
-  });
-}
-
-clickBtn.addEventListener('click', () => {
-  score += clickValue;
-  gainExp(10);
-  missionsData[0].progress++;
+  checkLevelUp();
   checkMissions();
+  checkAchievements();
+
   updateDisplay();
-  saveGame();
-});
+  animateClick();
+}
 
-upgradeClickBtn.addEventListener('click', () => {
-  const cost = 50 * clickValue;
-  if (score >= cost) {
-    score -= cost;
-    clickValue++;
-    showNotification(`Ulepszono kliknięcie! Teraz +${clickValue} pkt.`);
-    checkMissions();
-    updateDisplay();
-    saveGame();
-  } else {
-    showNotification('Za mało punktów na ulepszenie kliknięcia.');
+// Animate button click
+function animateClick() {
+  clickBtn.classList.add('clicked');
+  setTimeout(() => clickBtn.classList.remove('clicked'), 150);
+}
+
+// Level up
+function checkLevelUp() {
+  const needed = expNeededForLevel(state.level);
+  if (state.exp >= needed) {
+    state.exp -= needed;
+    state.level++;
+    showNotification(`Gratulacje! Awansowałeś na poziom ${state.level}!`);
+    upgradeSound.currentTime = 0;
+    upgradeSound.play();
   }
-});
+}
 
-upgradeAutoBtn.addEventListener('click', () => {
-  const cost = 100 * (autoClickValue + 1);
-  if (score >= cost) {
-    score -= cost;
-    autoClickValue++;
-    showNotification(`Kupiono +1 automatyczne kliknięcie.`);
-    checkMissions();
+// Upgrades
+function buyUpgradeClick() {
+  const cost = upgradeClickCost();
+  if (state.score >= cost) {
+    state.score -= cost;
+    state.clickValue++;
+    upgradeSound.currentTime = 0;
+    upgradeSound.play();
     updateDisplay();
-    saveGame();
+    checkMissions();
+    checkAchievements();
   } else {
-    showNotification('Za mało punktów na automatyczne kliknięcie.');
+    showNotification("Nie masz wystarczająco punktów!");
   }
-});
+}
 
-shopBtn.addEventListener('click', () => {
-  shopEl.classList.remove('hidden');
-});
+function buyUpgradeAuto() {
+  const cost = upgradeAutoCost();
+  if (state.score >= cost) {
+    state.score -= cost;
+    state.autoClickValue++;
+    upgradeSound.currentTime = 0;
+    upgradeSound.play();
+    updateDisplay();
+    checkMissions();
+    checkAchievements();
+  } else {
+    showNotification("Nie masz wystarczająco punktów!");
+  }
+}
 
-closeShopBtn.addEventListener('click', () => {
-  shopEl.classList.add('hidden');
-});
-
-buyItems.forEach(button => {
-  button.addEventListener('click', () => {
-    const cost = Number(button.dataset.cost);
-    const effect = button.dataset.effect;
-    const amount = Number(button.dataset.amount);
-    if (score >= cost) {
-      score -= cost;
-      if (effect === 'extraClick') clickValue += amount;
-      if (effect === 'autoClick') autoClickValue += amount;
-      showNotification(`Kupiono ${amount} ${effect === 'extraClick' ? 'kliknięć' : 'automatycznych kliknięć'}.`);
-      updateDisplay();
-      saveGame();
-    } else {
-      showNotification('Za mało punktów.');
-    }
-  });
-});
-
-// Automatyczne kliknięcie co sekundę
+// Auto click interval
 setInterval(() => {
-  if (autoClickValue > 0) {
-    score += autoClickValue;
-    gainExp(autoClickValue * 5);
+  if (state.autoClickValue > 0) {
+    state.score += state.autoClickValue;
+    state.exp += state.autoClickValue;
     updateDisplay();
-    saveGame();
+    checkLevelUp();
+    checkMissions();
+    checkAchievements();
   }
 }, 1000);
 
-loadGame();
+// Shop purchase handler
+shopItems.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const cost = parseInt(btn.dataset.cost);
+    if (state.score < cost) {
+      showNotification("Nie masz wystarczająco punktów!");
+      return;
+    }
+    const effect = btn.dataset.effect;
+    const amount = parseInt(btn.dataset.amount) || 1;
+    const duration = parseInt(btn.dataset.duration) || 0;
+
+    state.score -= cost;
+
+    if (effect === "extraClick") {
+      state.clickValue += amount;
+      showNotification(`Kliknięcie ulepszone o +${amount}!`);
+    }
+    else if (effect === "autoClick") {
+      state.autoClickValue += amount;
+      showNotification(`Dodano +${amount} automatycznych kliknięć!`);
+    }
+    else if (effect === "clickBoost" && duration > 0) {
+      activateClickBoost(duration);
+      showNotification(`Boost kliknięcia x${state.clickBoostMultiplier} aktywowany na ${duration} sekund!`);
+    }
+
+    upgradeSound.currentTime = 0;
+    upgradeSound.play();
+
+    updateDisplay();
+    checkMissions();
+    checkAchievements();
+  });
+});
+
+// Click boost activation
+function activateClickBoost(seconds) {
+  state.clickBoostActive = true;
+  state.clickBoostTimeLeft = seconds;
+  if (!state.clickBoostInterval) {
+    state.clickBoostInterval = setInterval(() => {
+      state.clickBoostTimeLeft--;
+      if (state.clickBoostTimeLeft <= 0) {
+        clearInterval(state.clickBoostInterval);
+        state.clickBoostInterval = null;
+        state.clickBoostActive = false;
+        showNotification("Boost kliknięcia wygasł");
+      }
+    }, 1000);
+  }
+}
+
+// Missions system
+const missions = [
+  { id: 1, description: "Kliknij 100 razy", condition: () => state.score >= 100, reward: 50, completed: false },
+  { id: 2, description: "Awansuj na poziom 3", condition: () => state.level >= 3, reward: 100, completed: false },
+  { id: 3, description: "Kup ulepszenie kliknięcia", condition: () => state.clickValue > 1, reward: 150, completed: false },
+  { id: 4, description: "Kup 3 automatyczne kliknięcia", condition: () => state.autoClickValue >= 3, reward: 200, completed: false },
+  { id: 5, description: "Zdobyj 1000 punktów", condition: () => state.score >= 1000, reward: 500, completed: false }
+];
+
+// Display missions
+function renderMissions() {
+  missionListEl.innerHTML = "";
+  missions.forEach(m => {
+    const li = document.createElement('li');
+    li.textContent = `${m.description} - ${m.completed ? "Wykonane" : "W trakcie"}`;
+    if (m.completed) li.classList.add('completed');
+    missionListEl.appendChild(li);
+  });
+}
+
+// Check missions progress
+function checkMissions() {
+  missions.forEach(m => {
+    if (!m.completed && m.condition()) {
+      m.completed = true;
+      state.score += m.reward;
+      showNotification(`Misja ukończona! +${m.reward} punktów`);
+      achievementSound.currentTime = 0;
+      achievementSound.play();
+      renderMissions();
+    }
+  });
+}
+
+// Achievements system
+const achievements = [
+  { id: 1, description: "Pierwszy klik", condition: () => state.score >= 1 },
+  { id: 2, description: "100 punktów", condition: () => state.score >= 100 },
+  { id: 3, description: "Poziom 5", condition: () => state.level >= 5 },
+  { id: 4, description: "10 ulepszeń kliknięcia", condition: () => state.clickValue >= 10 },
+  { id: 5, description: "Prestiż 1", condition: () => state.prestigeLevel >= 1 }
+];
+
+function renderAchievements() {
+  achievementListEl.innerHTML = "";
+  achievements.forEach(a => {
+    const li = document.createElement('li');
+    const unlocked = state.achievementsUnlocked.has(a.id);
+    li.textContent = `${a.description} - ${unlocked ? "Odblokowane" : "Zablokowane"}`;
+    if (unlocked) li.classList.add('completed');
+    achievementListEl.appendChild(li);
+  });
+}
+
+function checkAchievements() {
+  achievements.forEach(a => {
+    if (!state.achievementsUnlocked.has(a.id) && a.condition()) {
+      state.achievementsUnlocked.add(a.id);
+      showNotification(`Osiągnięcie odblokowane: ${a.description}`);
+      achievementSound.currentTime = 0;
+      achievementSound.play();
+      renderAchievements();
+    }
+  });
+}
+
+// Prestige system
+function canPrestige() {
+  return state.level >= 10;
+}
+
+function prestige() {
+  if (!canPrestige()) {
+    showNotification("Musisz osiągnąć co najmniej poziom 10, aby aktywować prestiż!");
+    return;
+  }
+  state.prestigeLevel++;
+  showNotification(`Prestiż aktywowany! Poziom prestiżu: ${state.prestigeLevel}`);
+  prestigeSound.currentTime = 0;
+  prestigeSound.play();
+
+  // Reset podstawowych wartości, zachowując prestiż
+  state.score = 0;
+  state.exp = 0;
+  state.level = 0;
+  state.clickValue = 1 + state.prestigeLevel; // bonus z prestiżu
+  state.autoClickValue = 0;
+  state.clickBoostActive = false;
+  state.clickBoostTimeLeft = 0;
+  missions.forEach(m => m.completed = false);
+  state.achievementsUnlocked.clear();
+
+  renderMissions();
+  renderAchievements();
+  updateDisplay();
+}
+
+prestigeBtn.addEventListener('click', prestige);
+
+// Event listeners
+clickBtn.addEventListener('click', onClick);
+upgradeClickBtn.addEventListener('click', buyUpgradeClick);
+upgradeAutoBtn.addEventListener('click', buyUpgradeAuto);
+
+// Init render
+renderMissions();
+renderAchievements();
+updateDisplay();
+
+// Save/load state could be added here with Firebase or localStorage
+
