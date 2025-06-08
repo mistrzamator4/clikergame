@@ -3,36 +3,37 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Clicker z Levelami i Sklepem</title>
+  <title>CyberClicker</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Clicker</h1>
-  <div id="score">0</div>
-  <div id="exp-level">
-    EXP: <span id="exp">0</span> / <span id="expNeeded">100</span>  
-    &nbsp;|&nbsp; Poziom: <span id="level">0</span>
-  </div>
-  <button id="click-btn">Kliknij mnie!</button>
-  <button id="toggle-upgrades-btn">Pokaż/Ulepszenia</button>
-  <button id="toggle-shop-btn">Pokaż/Sklep</button>
+  <div class="container">
+    <h1>CyberClicker</h1>
+    <div id="stats">
+      <div>Punkty: <span id="score">0</span></div>
+      <div>EXP: <span id="exp">0</span> / <span id="expNeeded">100</span></div>
+      <div>Poziom: <span id="level">0</span></div>
+    </div>
+    <button id="click-btn">Kliknij!</button>
 
-  <div id="upgrades" class="panel hidden">
-    <h2>Ulepszenia</h2>
-    <button id="upgrade-click">Ulepsz kliknięcie (koszt: 50)</button>
-    <button id="upgrade-auto">Automatyczne kliknięcie (koszt: 100)</button>
-  </div>
+    <div class="panel-toggle" onclick="togglePanel('upgrades')">Ulepszenia ▼</div>
+    <div id="upgrades" class="panel hidden">
+      <button id="upgrade-click">Ulepsz kliknięcie</button>
+      <button id="upgrade-auto">Auto-klikanie</button>
+    </div>
 
-  <div id="shop" class="panel hidden">
-    <h2>Sklep</h2>
-    <button class="buy-item" data-cost="200" data-effect="extraClick" data-amount="1">
-      Kup +1 do kliknięcia (200 punktów)
-    </button>
-    <button class="buy-item" data-cost="500" data-effect="autoClick" data-amount="2">
-      Kup +2 automatyczne kliknięcia (500 punktów)
-    </button>
+    <div class="panel-toggle" onclick="togglePanel('shop')">Sklep ▼</div>
+    <div id="shop" class="panel hidden">
+      <button class="buy-item" data-cost="200" data-effect="extraClick" data-amount="1">+1 do kliknięcia</button>
+      <button class="buy-item" data-cost="500" data-effect="autoClick" data-amount="2">+2 auto kliknięcia</button>
+    </div>
   </div>
 
   <script type="module" src="main.js"></script>
+  <script>
+    function togglePanel(id) {
+      document.getElementById(id).classList.toggle('hidden');
+    }
+  </script>
 </body>
 </html>
