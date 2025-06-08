@@ -1,147 +1,235 @@
-import { showNotification } from './utils.js';
-import { initShop, updateUI as updateShopUI } from './shop.js';
-import { renderMissions, updateMissions } from './missions.js';
-import { checkAchievements, renderAchievements } from './achievements.js';
+// main.js - moduł ES, wymaga włączenia <script type="module">
 
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-analytics.js";
+
+// Firebase config (Twoje dane)
+const firebaseConfig = {
+  apiKey: "AIzaSyBfMD9KaoaiBse0JT450AW3d4hr6a-iLeQ",
+  authDomain: "clickerprostagra.firebaseapp.com",
+  projectId: "clickerprostagra",
+  storageBucket: "clickerprostagra.firebasestorage.app",
+  messagingSenderId: "918100413777",
+  appId: "1:918100413777:web:27b56666de3d3eb1421770",
+  measurementId: "G-TNJ32PDHHR"
+};
+
+// Inicjalizacja Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const db = getFirestore(app);
+
+// Unikalny ID gracza
+let playerId = localStorage.getItem('playerId');
+if (!playerId) {
+  playerId = Math.random().toString(36).substring(2, 10);
+  localStorage.setItem('playerId', playerId);
+}
+const userDoc = doc(db, "players", playerId);
+
+// --- Stan gry ---
+let score = 0;
+let clickValue = 1;
+let autoClickValue = 0;
+let exp = 0;
+let level = 0;
+
+// --- Elementy DOM ---
+const scoreEl = document.querySelector('#score span');
+const expEl = document.getElementById('exp');
+const expNeededEl = document.getElementById('expNeeded');
+const levelEl = document.getElementById('level');
 const clickBtn = document.getElementById('click-btn');
 const upgradeClickBtn = document.getElementById('upgrade-click');
 const upgradeAutoBtn = document.getElementById('upgrade-auto');
-const buyDoubleExpBtn = document.getElementById('buy-double-exp');
+const notificationEl = document.getElementById('notification');
 
-let gameData = {
-  score: 0,
-  exp: 0,
-  expNeeded: 100,
-  level: 0,
-  clickValue: 1,
-  autoClickValue: 0,
-  premiumCurrency: 0,
-  achievements: {},
-  completedMissions: [],
-  clicksMade: 0,
-  doubleExpActive: false,
-  doubleExpTimer: 0,
-};
+const tabButtons = document.querySelectorAll('nav .tab-btn');
+const tabs = document.querySelectorAll('main section.tab');
 
-function saveGame() {
-  localStorage.setItem('clickerGameData', JSON.stringify(gameData));
+// --- Funkcje pomocnicze ---
+
+function showNotification(message) {
+  notificationEl.textContent = message;
+  notificationEl.classList.add('show');
+  setTimeout(() => {
+    notificationEl.classList.remove('show');
+  }, 2000);
 }
 
-function loadGame() {
-  const saved = localStorage.getItem('clickerGameData');
-  if (saved) {
-    gameData = JSON.parse(saved);
-  }
+function updateUI() {
+  scoreEl.textContent = score;
+  expEl.textContent = exp;
+  expNeededEl.textContent = getExpNeeded(level);
+  levelEl.textContent = level;
+
+  // Aktualizuj teksty ulepszeń z kosztami dynamicznie
+  upgradeClickBtn.textContent = `Ulepsz kliknięcie (koszt: ${upgradeClickCost()})`;
+  upgradeAutoBtn.textContent = `Automatyczne kliknięcie (koszt: ${upgradeAutoCost()})`;
+}
+
+function getExpNeeded(lvl) {
+  return 100 + lvl * 50;
+}
+
+function upgradeClickCost() {
+  return 50 + level * 20;
+}
+
+function upgradeAutoCost() {
+  return 100 + level * 50;
 }
 
 function levelUp() {
-  while (gameData.exp >= gameData.expNeeded) {
-    gameData.exp -= gameData.expNeeded;
-    gameData.level++;
-    gameData.expNeeded = Math.floor(gameData.expNeeded * 1.25);
-    showNotification(`Poziom wyższy! Teraz jesteś na poziomie ${gameData.level}`);
+  while (exp >= getExpNeeded(level)) {
+    exp -= getExpNeeded(level);
+    level++;
+    showNotification(`Gratulacje! Awansowałeś na poziom ${level}!`);
   }
 }
 
-function gainExp(amount) {
-  if (gameData.doubleExpActive) amount *= 2;
-  gameData.exp += amount;
-  levelUp();
-}
+// --- Logika gry ---
 
 clickBtn.addEventListener('click', () => {
-  gameData.score += gameData.clickValue;
-  gameData.clicksMade++;
-  gainExp(5);
+  score += clickValue;
+  exp += 5;
+  levelUp();
   updateUI();
-  updateMissions(gameData);
-  checkAchievements(gameData);
-  saveGame();
+  animateScore('+ ' + clickValue);
 });
 
 upgradeClickBtn.addEventListener('click', () => {
-  const cost = 50 + gameData.clickValue * 20;
-  if (gameData.score >= cost) {
-    gameData.score -= cost;
-    gameData.clickValue++;
-    showNotification(`Kliknięcie ulepszone! Teraz +${gameData.clickValue}`);
+  const cost = upgradeClickCost();
+  if (score >= cost) {
+    score -= cost;
+    clickValue++;
+    showNotification('Kliknięcie ulepszone!');
     updateUI();
-    saveGame();
   } else {
-    showNotification("Za mało punktów!");
+    showNotification('Nie masz wystarczająco punktów!');
   }
 });
 
 upgradeAutoBtn.addEventListener('click', () => {
-  const cost = 100 + gameData.autoClickValue * 30;
-  if (gameData.score >= cost) {
-    gameData.score -= cost;
-    gameData.autoClickValue++;
-    showNotification(`Automatyczne kliknięcie ulepszone! Teraz +${gameData.autoClickValue}`);
+  const cost = upgradeAutoCost();
+  if (score >= cost) {
+    score -= cost;
+    autoClickValue++;
+    showNotification('Automatyczne kliknięcie ulepszone!');
     updateUI();
-    saveGame();
   } else {
-    showNotification("Za mało punktów!");
+    showNotification('Nie masz wystarczająco punktów!');
   }
 });
 
-buyDoubleExpBtn.addEventListener('click', () => {
-  const cost = 300;
-  if (gameData.premiumCurrency >= cost) {
-    if (!gameData.doubleExpActive) {
-      gameData.premiumCurrency -= cost;
-      gameData.doubleExpActive = true;
-      gameData.doubleExpTimer = 60 * 60; // 60 sekund (lub 3600 jeśli chcesz 1h)
-      showNotification("x2 EXP aktywne przez 60 sekund!");
-      saveGame();
+// Automatyczne kliknięcia
+setInterval(() => {
+  if (autoClickValue > 0) {
+    score += autoClickValue;
+    exp += autoClickValue * 2;
+    levelUp();
+    updateUI();
+    animateScore(`+${autoClickValue} (auto)`);
+  }
+}, 3000);
+
+// Zakup w sklepie
+document.querySelectorAll('.buy-item').forEach(button => {
+  button.addEventListener('click', () => {
+    const cost = Number(button.dataset.cost);
+    const effect = button.dataset.effect;
+    const amount = Number(button.dataset.amount);
+    if (score >= cost) {
+      score -= cost;
+      if (effect === 'extraClick') {
+        clickValue += amount;
+      } else if (effect === 'autoClick') {
+        autoClickValue += amount;
+      }
+      showNotification(`Zakupiono ${amount} ${effect === 'extraClick' ? 'kliknięć' : 'automatycznych kliknięć'}!`);
+      updateUI();
     } else {
-      showNotification("Masz już aktywne x2 EXP!");
+      showNotification('Nie masz wystarczająco punktów!');
     }
-  } else {
-    showNotification("Za mało waluty premium!");
-  }
+  });
 });
 
-function autoClicker() {
-  if (gameData.autoClickValue > 0) {
-    gameData.score += gameData.autoClickValue;
-    gainExp(gameData.autoClickValue * 2);
-    updateUI();
-    updateMissions(gameData);
-    checkAchievements(gameData);
-    saveGame();
-  }
+// Animacja licznika punktów przy kliknięciu
+function animateScore(text) {
+  const anim = document.createElement('div');
+  anim.textContent = text;
+  anim.style.position = 'absolute';
+  anim.style.left = clickBtn.offsetLeft + clickBtn.offsetWidth / 2 + 'px';
+  anim.style.top = clickBtn.offsetTop + 'px';
+  anim.style.color = '#76c7b7';
+  anim.style.fontWeight = '700';
+  anim.style.userSelect = 'none';
+  anim.style.pointerEvents = 'none';
+  anim.style.zIndex = 1000;
+  anim.style.transition = 'all 1s ease';
+  document.getElementById('app').appendChild(anim);
+
+  setTimeout(() => {
+    anim.style.transform = 'translateY(-50px)';
+    anim.style.opacity = '0';
+  }, 10);
+
+  setTimeout(() => {
+    anim.remove();
+  }, 1000);
 }
 
-function updateUI() {
-  document.getElementById('score').textContent = gameData.score;
-  document.getElementById('exp').textContent = gameData.exp;
-  document.getElementById('expNeeded').textContent = gameData.expNeeded;
-  document.getElementById('level').textContent = gameData.level;
-  document.getElementById('premium-currency').textContent = gameData.premiumCurrency;
-  document.getElementById('upgrade-click').textContent = `Ulepsz kliknięcie (koszt: ${50 + gameData.clickValue * 20}) - aktualnie: +${gameData.clickValue}`;
-  document.getElementById('upgrade-auto').textContent = `Automatyczne kliknięcie (koszt: ${100 + gameData.autoClickValue * 30}) - aktualnie: +${gameData.autoClickValue}`;
+// Zakładki
+tabButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    tabButtons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.dataset.tab;
+    tabs.forEach(t => t.classList.remove('active'));
+    document.getElementById(tab).classList.add('active');
+  });
+});
 
-  renderMissions(gameData);
-  renderAchievements(gameData.achievements);
-  updateShopUI(gameData);
-}
+// --- Firebase - zapis i wczytywanie danych ---
 
-function tick() {
-  if (gameData.doubleExpActive) {
-    gameData.doubleExpTimer--;
-    if (gameData.doubleExpTimer <= 0) {
-      gameData.doubleExpActive = false;
-      showNotification("x2 EXP wygasło.");
+async function loadGame() {
+  try {
+    const docSnap = await getDoc(userDoc);
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      score = data.score || 0;
+      clickValue = data.clickValue || 1;
+      autoClickValue = data.autoClickValue || 0;
+      exp = data.exp || 0;
+      level = data.level || 0;
+      updateUI();
     }
+  } catch (err) {
+    console.error("Błąd wczytywania danych:", err);
   }
-  autoClicker();
-  saveGame();
-  updateUI();
 }
 
-loadGame();
-initShop(gameData);
-updateUI();
+async function saveGame() {
+  try {
+    await setDoc(userDoc, {
+      score,
+      clickValue,
+      autoClickValue,
+      exp,
+      level,
+      updated: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error("Błąd zapisu danych:", err);
+  }
+}
 
-setInterval(tick, 1000);
+// Autosave co 10 sekund
+setInterval(saveGame, 10000);
+
+window.addEventListener('beforeunload', saveGame);
+
+// Start
+loadGame();
+updateUI();
