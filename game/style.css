@@ -1,68 +1,61 @@
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #121212;
-  color: #e0e0e0;
-  text-align: center;
-  margin: 0; padding: 2rem;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to bottom right, #e0e0e0, #ffffff);
+  margin: 0;
+  padding: 0;
+  color: #222;
+}
+
+.container {
+  max-width: 400px;
+  margin: 30px auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
 }
 
 h1 {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-  color: #0ff;
-  text-shadow: 0 0 8px #0ff;
+  text-align: center;
 }
 
-#score {
-  font-size: 4rem;
-  margin-bottom: 0.5rem;
-  color: #0ff;
-  text-shadow: 0 0 10px #0ff;
-}
-
-#exp-level {
-  font-size: 1.25rem;
-  margin-bottom: 1rem;
-  color: #99f;
+#stats {
+  margin-bottom: 20px;
+  font-size: 16px;
 }
 
 button {
-  font-size: 1rem;
-  padding: 0.5rem 1.5rem;
-  margin: 0.25rem;
+  display: block;
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  font-size: 16px;
   border: none;
   border-radius: 6px;
-  background: #222;
-  color: #0ff;
+  background-color: #3f51b5;
+  color: white;
   cursor: pointer;
-  transition: background 0.3s, box-shadow 0.3s;
-  box-shadow: 0 0 6px #0ff;
+  transition: background 0.2s ease-in-out;
 }
 
 button:hover {
-  background: #0ff;
-  color: #121212;
-  box-shadow: 0 0 12px #0ff;
+  background-color: #303f9f;
+}
+
+.panel-toggle {
+  margin-top: 20px;
+  background-color: #eeeeee;
+  padding: 10px;
+  cursor: pointer;
+  text-align: center;
+  border-radius: 6px;
+  font-weight: bold;
 }
 
 .panel {
-  margin-top: 1rem;
-  padding: 1rem;
-  background: #1e1e1e;
-  border-radius: 8px;
-  box-shadow: 0 0 10px #0ff88a;
-  max-width: 400px;
-  margin-left: auto;
-  margin-right: auto;
-  transition: max-height 0.5s ease;
-  overflow: hidden;
+  margin-top: 10px;
 }
 
 .hidden {
-  max-height: 0;
-  padding: 0 1rem;
-  margin-top: 0;
-  opacity: 0;
-  pointer-events: none;
-  transition: max-height 0.5s ease, opacity 0.5s ease;
+  display: none;
 }
