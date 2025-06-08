@@ -1,109 +1,68 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
-
 body {
-  margin: 0;
-  background: #0f0f15;
-  color: #00ffea;
-  font-family: 'Orbitron', monospace, sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  min-height: 100vh;
-  padding: 20px;
-}
-
-#app {
-  max-width: 600px;
-  width: 100%;
-  background: #11111f;
-  border: 3px solid #00ffea;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 0 15px #00ffea88;
-}
-
-header {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #121212;
+  color: #e0e0e0;
   text-align: center;
-  margin-bottom: 15px;
+  margin: 0; padding: 2rem;
 }
 
-header h1 {
-  margin: 0 0 10px;
+h1 {
   font-size: 2.5rem;
-  text-shadow: 0 0 10px #00ffea;
+  margin-bottom: 1rem;
+  color: #0ff;
+  text-shadow: 0 0 8px #0ff;
 }
 
-.stats {
-  display: flex;
-  justify-content: space-around;
-  font-size: 1.1rem;
-  border-top: 1px solid #00ffea44;
-  padding-top: 10px;
+#score {
+  font-size: 4rem;
+  margin-bottom: 0.5rem;
+  color: #0ff;
+  text-shadow: 0 0 10px #0ff;
 }
 
-.neon-btn {
-  background: transparent;
-  border: 2px solid #00ffea;
-  color: #00ffea;
-  padding: 12px 20px;
-  margin: 8px 0;
-  font-size: 1.1rem;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.2s ease-in-out;
-  box-shadow: 0 0 10px #00ffea88;
-  user-select: none;
+#exp-level {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  color: #99f;
 }
 
-.neon-btn:hover {
-  background: #00ffea;
-  color: #11111f;
-  box-shadow: 0 0 20px #00ffea;
-}
-
-main section {
-  margin-top: 25px;
-}
-
-#shop-items {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-#missions ul, #achievements ul {
-  list-style: none;
-  padding-left: 0;
-  max-height: 150px;
-  overflow-y: auto;
-  border: 1px solid #00ffea55;
+button {
+  font-size: 1rem;
+  padding: 0.5rem 1.5rem;
+  margin: 0.25rem;
+  border: none;
   border-radius: 6px;
-  padding: 10px;
-  background: #11111fdd;
+  background: #222;
+  color: #0ff;
+  cursor: pointer;
+  transition: background 0.3s, box-shadow 0.3s;
+  box-shadow: 0 0 6px #0ff;
 }
 
-#missions li.completed {
-  text-decoration: line-through;
-  color: #4caf50;
+button:hover {
+  background: #0ff;
+  color: #121212;
+  box-shadow: 0 0 12px #0ff;
 }
 
-#notification {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #00ffea;
-  color: #11111f;
-  padding: 15px 30px;
-  border-radius: 25px;
-  font-weight: 700;
-  font-size: 1.2rem;
-  box-shadow: 0 0 25px #00ffea;
-  opacity: 0.95;
-  pointer-events: none;
-  z-index: 9999;
+.panel {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #1e1e1e;
+  border-radius: 8px;
+  box-shadow: 0 0 10px #0ff88a;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+  transition: max-height 0.5s ease;
+  overflow: hidden;
 }
 
 .hidden {
-  display: none;
+  max-height: 0;
+  padding: 0 1rem;
+  margin-top: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: max-height 0.5s ease, opacity 0.5s ease;
 }
