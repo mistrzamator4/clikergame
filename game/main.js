@@ -1,168 +1,147 @@
-// main.js
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-analytics.js";
+import { showNotification } from './utils.js';
+import { initShop, updateUI as updateShopUI } from './shop.js';
+import { renderMissions, updateMissions } from './missions.js';
+import { checkAchievements, renderAchievements } from './achievements.js';
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBfMD9KaoaiBse0JT450AW3d4hr6a-iLeQ",
-  authDomain: "clickerprostagra.firebaseapp.com",
-  projectId: "clickerprostagra",
-  storageBucket: "clickerprostagra.firebasestorage.app",
-  messagingSenderId: "918100413777",
-  appId: "1:918100413777:web:27b56666de3d3eb1421770",
-  measurementId: "G-TNJ32PDHHR"
+const clickBtn = document.getElementById('click-btn');
+const upgradeClickBtn = document.getElementById('upgrade-click');
+const upgradeAutoBtn = document.getElementById('upgrade-auto');
+const buyDoubleExpBtn = document.getElementById('buy-double-exp');
+
+let gameData = {
+  score: 0,
+  exp: 0,
+  expNeeded: 100,
+  level: 0,
+  clickValue: 1,
+  autoClickValue: 0,
+  premiumCurrency: 0,
+  achievements: {},
+  completedMissions: [],
+  clicksMade: 0,
+  doubleExpActive: false,
+  doubleExpTimer: 0,
 };
 
-const app = initializeApp(firebaseConfig);
-getAnalytics(app);
-const db = getFirestore(app);
-
-let playerId = localStorage.getItem('playerId');
-if (!playerId) {
-  playerId = Math.random().toString(36).substring(2, 10);
-  localStorage.setItem('playerId', playerId);
-}
-const userDoc = doc(db, "players", playerId);
-
-let score = 0, clickValue = 1, autoClickValue = 0, exp = 0, level = 0, expBonus = 0;
-
-const scoreEl = document.getElementById('score'),
-      expEl = document.getElementById('exp'),
-      levelEl = document.getElementById('level'),
-      expNeededEl = document.getElementById('expNeeded'),
-      clickBtn = document.getElementById('click-btn'),
-      upgradeClickBtn = document.getElementById('upgrade-click'),
-      upgradeAutoBtn = document.getElementById('upgrade-auto'),
-      shopBtn = document.getElementById('shop-btn'),
-      shopEl = document.getElementById('shop'),
-      cityEls = {
-        house: document.getElementById('house'),
-        factory: document.getElementById('factory'),
-        school: document.getElementById('school')
-      },
-      missionsEl = document.getElementById('missions'),
-      buyItems = document.querySelectorAll('.buy-item');
-
-const buildings = {
-  house: { built: false, cost: 100, effect: () => { clickValue += 1; } },
-  factory: { built: false, cost: 300, effect: () => { autoClickValue += 1; } },
-  school: { built: false, cost: 500, effect: () => { expBonus += 10; } }
-};
-
-function expNeededForLevel(l) { return 100 * (l + 1); }
-
-function updateDisplay() {
-  scoreEl.textContent = `Punkty: ${score}`;
-  expEl.textContent = Math.floor(exp);
-  levelEl.textContent = level;
-  expNeededEl.textContent = expNeededForLevel(level);
-
-  upgradeClickBtn.textContent = `Ulepsz kliknięcie (koszt: ${50 * clickValue})`;
-  upgradeAutoBtn.textContent = `Automatyczne kliknięcie (koszt: ${100 * (autoClickValue + 1)})`;
-
-  Object.keys(buildings).forEach(key => {
-    if (buildings[key].built) cityEls[key].classList.add('built');
-    else cityEls[key].classList.remove('built');
-  });
+function saveGame() {
+  localStorage.setItem('clickerGameData', JSON.stringify(gameData));
 }
 
-async function saveProgress() {
-  await setDoc(userDoc, {
-    score, clickValue, autoClickValue, exp, level, expBonus,
-    buildings: Object.fromEntries(Object.entries(buildings).map(([k,v])=>[k,v.built]))
-  });
-}
-
-async function loadProgress() {
-  const snap = await getDoc(userDoc);
-  if (snap.exists()) {
-    const data = snap.data();
-    score = data.score || 0;
-    clickValue = data.clickValue || 1;
-    autoClickValue = data.autoClickValue || 0;
-    exp = data.exp || 0;
-    level = data.level || 0;
-    expBonus = data.expBonus || 0;
-    if (data.buildings) {
-      Object.keys(data.buildings).forEach(k => buildings[k] && (buildings[k].built = data.buildings[k]));
-    }
+function loadGame() {
+  const saved = localStorage.getItem('clickerGameData');
+  if (saved) {
+    gameData = JSON.parse(saved);
   }
-  updateDisplay();
-  updateMission();
 }
 
-function checkLevelUp() {
-  const req = expNeededForLevel(level);
-  if (exp >= req) {
-    exp -= req;
-    level++;
-    alert(`Gratulacje! Wbiłeś poziom ${level}!`);
+function levelUp() {
+  while (gameData.exp >= gameData.expNeeded) {
+    gameData.exp -= gameData.expNeeded;
+    gameData.level++;
+    gameData.expNeeded = Math.floor(gameData.expNeeded * 1.25);
+    showNotification(`Poziom wyższy! Teraz jesteś na poziomie ${gameData.level}`);
   }
+}
+
+function gainExp(amount) {
+  if (gameData.doubleExpActive) amount *= 2;
+  gameData.exp += amount;
+  levelUp();
 }
 
 clickBtn.addEventListener('click', () => {
-  score += clickValue;
-  exp += clickValue * (1 + expBonus/100);
-  checkLevelUp();
-  updateDisplay();
-  saveProgress();
+  gameData.score += gameData.clickValue;
+  gameData.clicksMade++;
+  gainExp(5);
+  updateUI();
+  updateMissions(gameData);
+  checkAchievements(gameData);
+  saveGame();
 });
 
 upgradeClickBtn.addEventListener('click', () => {
-  const cost = 50 * clickValue;
-  if (score >= cost) {
-    score -= cost; clickValue++; updateDisplay(); saveProgress();
-  } else alert('Za mało punktów!');
+  const cost = 50 + gameData.clickValue * 20;
+  if (gameData.score >= cost) {
+    gameData.score -= cost;
+    gameData.clickValue++;
+    showNotification(`Kliknięcie ulepszone! Teraz +${gameData.clickValue}`);
+    updateUI();
+    saveGame();
+  } else {
+    showNotification("Za mało punktów!");
+  }
 });
 
 upgradeAutoBtn.addEventListener('click', () => {
-  const cost = 100 * (autoClickValue + 1);
-  if (score >= cost) {
-    score -= cost; autoClickValue++; updateDisplay(); saveProgress();
-  } else alert('Za mało punktów!');
-});
-
-setInterval(() => {
-  if (autoClickValue > 0) {
-    score += autoClickValue;
-    exp += autoClickValue * (1 + expBonus/100);
-    checkLevelUp();
-    updateDisplay();
-    saveProgress();
+  const cost = 100 + gameData.autoClickValue * 30;
+  if (gameData.score >= cost) {
+    gameData.score -= cost;
+    gameData.autoClickValue++;
+    showNotification(`Automatyczne kliknięcie ulepszone! Teraz +${gameData.autoClickValue}`);
+    updateUI();
+    saveGame();
+  } else {
+    showNotification("Za mało punktów!");
   }
-}, 1000);
-
-Object.keys(cityEls).forEach(key => {
-  cityEls[key].addEventListener('click', () => {
-    const b = buildings[key];
-    if (b.built) return alert("Już zbudowane!");
-    if (score >= b.cost) {
-      score -= b.cost; b.built = true; b.effect();
-      updateDisplay(); saveProgress(); updateMission(key);
-      alert(`${key} zbudowane!`);
-    } else alert("Za mało punktów!");
-  });
 });
 
-shopBtn.addEventListener('click', () => shopEl.classList.remove('hidden'));
-document.getElementById('close-shop').addEventListener('click', () => shopEl.classList.add('hidden'));
-buyItems.forEach(btn =>
-  btn.addEventListener('click', () => {
-    const cost = +btn.dataset.cost, effect = btn.dataset.effect, amt = +btn.dataset.amount;
-    if (score >= cost) {
-      score -= cost;
-      if (effect === 'extraClick') clickValue += amt;
-      else if (effect === 'autoClick') autoClickValue += amt;
-      updateDisplay(); saveProgress();
-    } else alert('Za mało punktów!');
-  })
-);
+buyDoubleExpBtn.addEventListener('click', () => {
+  const cost = 300;
+  if (gameData.premiumCurrency >= cost) {
+    if (!gameData.doubleExpActive) {
+      gameData.premiumCurrency -= cost;
+      gameData.doubleExpActive = true;
+      gameData.doubleExpTimer = 60 * 60; // 60 sekund (lub 3600 jeśli chcesz 1h)
+      showNotification("x2 EXP aktywne przez 60 sekund!");
+      saveGame();
+    } else {
+      showNotification("Masz już aktywne x2 EXP!");
+    }
+  } else {
+    showNotification("Za mało waluty premium!");
+  }
+});
 
-function updateMission(last) {
-  const next = last === 'house' ? 'Fabrykę (kliknij Fabrykę)' :
-               last === 'factory' ? 'Szkołę (kliknij Szkołę)' :
-               last === 'school' ? 'Wszystkie zbudowane!' : 'Zbuduj Dom';
-  missionsEl.innerHTML = `<strong>Misja:</strong> ${next}`;
+function autoClicker() {
+  if (gameData.autoClickValue > 0) {
+    gameData.score += gameData.autoClickValue;
+    gainExp(gameData.autoClickValue * 2);
+    updateUI();
+    updateMissions(gameData);
+    checkAchievements(gameData);
+    saveGame();
+  }
 }
 
-loadProgress();
+function updateUI() {
+  document.getElementById('score').textContent = gameData.score;
+  document.getElementById('exp').textContent = gameData.exp;
+  document.getElementById('expNeeded').textContent = gameData.expNeeded;
+  document.getElementById('level').textContent = gameData.level;
+  document.getElementById('premium-currency').textContent = gameData.premiumCurrency;
+  document.getElementById('upgrade-click').textContent = `Ulepsz kliknięcie (koszt: ${50 + gameData.clickValue * 20}) - aktualnie: +${gameData.clickValue}`;
+  document.getElementById('upgrade-auto').textContent = `Automatyczne kliknięcie (koszt: ${100 + gameData.autoClickValue * 30}) - aktualnie: +${gameData.autoClickValue}`;
+
+  renderMissions(gameData);
+  renderAchievements(gameData.achievements);
+  updateShopUI(gameData);
+}
+
+function tick() {
+  if (gameData.doubleExpActive) {
+    gameData.doubleExpTimer--;
+    if (gameData.doubleExpTimer <= 0) {
+      gameData.doubleExpActive = false;
+      showNotification("x2 EXP wygasło.");
+    }
+  }
+  autoClicker();
+  saveGame();
+  updateUI();
+}
+
+loadGame();
+initShop(gameData);
+updateUI();
+
+setInterval(tick, 1000);
