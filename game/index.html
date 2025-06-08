@@ -3,63 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Cyberpunk Clicker - Ultimate</title>
+  <title>Clicker z Levelami i Sklepem</title>
   <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <div id="app">
-    <header>
-      <h1>Cyberpunk Clicker</h1>
-      <div class="stats">
-        <div>Punkty: <span id="score">0</span></div>
-        <div>EXP: <span id="exp">0</span> / <span id="expNeeded">100</span></div>
-        <div>Poziom: <span id="level">0</span></div>
-        <div>Prestiż: <span id="prestigeLevel">0</span></div>
-      </div>
-    </header>
+  <h1>Clicker</h1>
+  <div id="score">0</div>
+  <div id="exp-level">
+    EXP: <span id="exp">0</span> / <span id="expNeeded">100</span>  
+    &nbsp;|&nbsp; Poziom: <span id="level">0</span>
+  </div>
+  <button id="click-btn">Kliknij mnie!</button>
+  <button id="toggle-upgrades-btn">Pokaż/Ulepszenia</button>
+  <button id="toggle-shop-btn">Pokaż/Sklep</button>
 
-    <main>
-      <button id="click-btn" class="neon-btn">Kliknij mnie!</button>
-
-      <section id="upgrades">
-        <h2>Ulepszenia</h2>
-        <button id="upgrade-click" class="neon-btn">Ulepsz kliknięcie (koszt: 50)</button>
-        <button id="upgrade-auto" class="neon-btn">Automatyczne kliknięcie (koszt: 100)</button>
-      </section>
-
-      <section id="shop-section">
-        <h2>Sklep</h2>
-        <div id="shop-items">
-          <button class="buy-item neon-btn" data-cost="200" data-effect="extraClick" data-amount="1">+1 do kliknięcia (200 pkt)</button>
-          <button class="buy-item neon-btn" data-cost="500" data-effect="autoClick" data-amount="2">+2 automatyczne kliknięcia (500 pkt)</button>
-          <button class="buy-item neon-btn" data-cost="1000" data-effect="clickBoost" data-amount="1" data-duration="30">Boost kliknięcia x2 na 30s (1000 pkt)</button>
-        </div>
-      </section>
-
-      <section id="missions">
-        <h2>Misje</h2>
-        <ul id="mission-list"></ul>
-      </section>
-
-      <section id="achievements">
-        <h2>Osiągnięcia</h2>
-        <ul id="achievement-list"></ul>
-      </section>
-
-      <section id="prestige-section">
-        <h2>Prestiż</h2>
-        <button id="prestige-btn" class="neon-btn">Resetuj i zdobądź prestiż</button>
-      </section>
-    </main>
-
-    <div id="notification" class="hidden"></div>
+  <div id="upgrades" class="panel hidden">
+    <h2>Ulepszenia</h2>
+    <button id="upgrade-click">Ulepsz kliknięcie (koszt: 50)</button>
+    <button id="upgrade-auto">Automatyczne kliknięcie (koszt: 100)</button>
   </div>
 
-  <audio id="click-sound" src="sounds/click.wav"></audio>
-  <audio id="upgrade-sound" src="sounds/upgrade.wav"></audio>
-  <audio id="achievement-sound" src="sounds/achievement.wav"></audio>
-  <audio id="prestige-sound" src="sounds/prestige.wav"></audio>
+  <div id="shop" class="panel hidden">
+    <h2>Sklep</h2>
+    <button class="buy-item" data-cost="200" data-effect="extraClick" data-amount="1">
+      Kup +1 do kliknięcia (200 punktów)
+    </button>
+    <button class="buy-item" data-cost="500" data-effect="autoClick" data-amount="2">
+      Kup +2 automatyczne kliknięcia (500 punktów)
+    </button>
+  </div>
 
   <script type="module" src="main.js"></script>
 </body>
