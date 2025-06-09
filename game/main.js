@@ -30,13 +30,6 @@ let autoClickValue = 0;
 let exp            = 0;
 let level          = 0;
 
-// Dodajemy zmienne do misji i EXP
-let exp = 0, level = 0;
-const missions = {
-  clicks: { goal: 100, progress: 0, done: false },
-  spent:  { goal: 500, progress: 0, done: false }
-};
-
 // Missions system
 const missionsData = [
   { id: 1, desc: "Kliknij 100 razy", goal: 100, progress: 0, reward: 50, completed: false },
