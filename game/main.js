@@ -1,86 +1,74 @@
-let score = 0;
-let clickPower = 1;
-let autoClickPower = 0;
-let exp = 0;
-let level = 0;
-let expNeeded = 100;
+let score = 0, clickPower = 1, autoClick = 0, exp = 0, level = 0;
+let expNeeded = 100, m1 = 0, m2 = 0;
 
-const scoreEl = document.getElementById("score");
-const clickBtn = document.getElementById("click-btn");
-const expEl = document.getElementById("exp");
-const levelEl = document.getElementById("level");
-const expNeededEl = document.getElementById("expNeeded");
+const scoreEl = document.getElementById('score');
+const expEl = document.getElementById('exp');
+const levelEl = document.getElementById('level');
+const expNeededEl = document.getElementById('expNeeded');
+const clickBtn = document.getElementById('click-btn');
+const upClick = document.getElementById('upgrade-click');
+const upAuto = document.getElementById('upgrade-auto');
+const m1El = document.getElementById('m1');
+const m2El = document.getElementById('m2');
 
-const mission1El = document.getElementById("mission1");
-const mission2El = document.getElementById("mission2");
-
-let mission1Clicks = 0;
-let mission2Spent = 0;
-
-function updateUI() {
-  scoreEl.textContent = Math.floor(score);
-  expEl.textContent = Math.floor(exp);
+function updAll() {
+  scoreEl.textContent = score;
+  expEl.textContent = exp;
   levelEl.textContent = level;
   expNeededEl.textContent = expNeeded;
-  mission1El.textContent = `${mission1Clicks}/10`;
-  mission2El.textContent = `${mission2Spent}/500`;
+  m1El.textContent = `${m1}/10`;
+  m2El.textContent = `${m2}/500`;
 }
 
-function gainExp(amount) {
-  exp += amount;
-  if (exp >= expNeeded) {
-    level++;
+function gainExp(x) {
+  exp += x;
+  while (exp >= expNeeded) {
     exp -= expNeeded;
-    expNeeded = Math.floor(expNeeded * 1.3);
+    level++;
+    expNeeded = Math.floor(expNeeded * 1.2);
   }
 }
 
-clickBtn.addEventListener("click", () => {
-  score += clickPower;
-  gainExp(clickPower);
-  mission1Clicks++;
-  updateUI();
-});
+clickBtn.onclick = () => {
+  score += clickPower; gainExp(clickPower);
+  m1++; updAll();
+};
 
-document.getElementById("upgrade-click").addEventListener("click", () => {
-  if (score >= 50) {
-    score -= 50;
-    clickPower++;
-    mission2Spent += 50;
-    updateUI();
+upClick.onclick = () => {
+  let cost = 50 * clickPower;
+  if (score >= cost) {
+    score -= cost; clickPower++; m2 += cost; updAll();
   }
-});
+};
 
-document.getElementById("upgrade-auto").addEventListener("click", () => {
-  if (score >= 100) {
-    score -= 100;
-    autoClickPower++;
-    mission2Spent += 100;
-    updateUI();
+upAuto.onclick = () => {
+  let cost = 100 * (autoClick + 1);
+  if (score >= cost) {
+    score -= cost; autoClick++; m2 += cost; updAll();
   }
-});
+};
 
 setInterval(() => {
-  if (autoClickPower > 0) {
-    score += autoClickPower;
-    gainExp(autoClickPower);
-    updateUI();
+  if (autoClick > 0) {
+    score += autoClick;
+    gainExp(autoClick);
+    updAll();
   }
-}, 1000);
+},1000);
 
-document.querySelectorAll(".buy-item").forEach(button => {
-  button.addEventListener("click", () => {
-    const cost = parseInt(button.getAttribute("data-cost"));
-    const effect = button.getAttribute("data-effect");
-    const amount = parseInt(button.getAttribute("data-amount"));
+document.querySelectorAll('.buy-item').forEach(b => {
+  b.onclick = () => {
+    const cost = +b.dataset.cost;
+    const effect = b.dataset.effect;
+    const amt = +b.dataset.amount;
     if (score >= cost) {
-      score -= cost;
-      mission2Spent += cost;
-      if (effect === "extraClick") clickPower += amount;
-      if (effect === "autoClick") autoClickPower += amount;
-      updateUI();
+      score -= cost; m2 += cost;
+      if (effect === 'extraClick') clickPower += amt;
+      if (effect === 'autoClick') autoClick += amt;
+      updAll();
     }
-  });
+  };
 });
 
-updateUI();
+// Init
+updAll();
