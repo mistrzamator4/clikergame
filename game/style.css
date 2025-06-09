@@ -1,9 +1,9 @@
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background: #0d0d0d;
-  color: #0ff;
+  font-family: sans-serif;
+  background: #121212;
+  color: #fff;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -11,55 +11,52 @@ body {
 }
 
 .container {
-  background: rgba(0, 0, 0, 0.7);
-  border: 2px solid #00ffff88;
-  border-radius: 15px;
+  background: #1a1a1a;
+  border: 2px solid #00bcd4;
+  border-radius: 12px;
   padding: 30px;
   width: 90%;
-  max-width: 400px;
-  box-shadow: 0 0 25px #00ffffaa;
+  max-width: 360px;
   text-align: center;
 }
 
 h1 {
-  font-size: 2em;
-  color: #00f7ff;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
+  color: #00bcd4;
 }
 
-.stats {
-  margin-bottom: 20px;
-  font-size: 1.1em;
+.stats div {
+  margin: 5px 0;
 }
 
 .btn {
-  background: #002233;
-  color: #0ff;
-  border: 2px solid #0ff;
-  padding: 10px 15px;
-  margin: 10px auto;
-  border-radius: 8px;
-  font-size: 1em;
-  cursor: pointer;
   display: block;
   width: 100%;
-  transition: background 0.3s;
+  margin: 8px 0;
+  padding: 12px;
+  font-size: 16px;
+  color: #fff;
+  background: #333;
+  border: 2px solid #00bcd4;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
 .btn:hover {
-  background: #003366;
+  background: #444;
 }
 
 .panel {
-  margin-top: 15px;
-  border: 1px solid #00ffff55;
-  border-radius: 10px;
+  margin-top: 12px;
   padding: 10px;
-  background-color: #000a;
+  background: #222;
+  border-radius: 8px;
+  border: 1px solid #00acc1;
 }
 
 summary {
   cursor: pointer;
-  font-weight: bold;
-  color: #0ff;
+  font-size: 16px;
+  margin-bottom: 6px;
 }
