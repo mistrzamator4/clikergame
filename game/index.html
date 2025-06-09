@@ -1,20 +1,19 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Cyberpunk Clicker</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clicker Plus</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
-    <h1>Cyberpunk Clicker</h1>
+    <h1>Clicker Plus</h1>
     <div class="stats">
       <div>Punkty: <span id="score">0</span></div>
       <div>EXP: <span id="exp">0</span> / <span id="expNeeded">100</span></div>
       <div>Poziom: <span id="level">0</span></div>
     </div>
-
     <button id="click-btn" class="btn">Kliknij!</button>
 
     <details class="panel">
@@ -25,23 +24,18 @@
 
     <details class="panel">
       <summary>Sklep</summary>
-      <button class="buy-item btn" data-cost="200" data-effect="extraClick" data-amount="1">
-        Kup +1 do kliknięcia (200)
-      </button>
-      <button class="buy-item btn" data-cost="500" data-effect="autoClick" data-amount="2">
-        Kup +2 auto klik (500)
-      </button>
+      <button class="buy-item btn" data-cost="200" data-effect="extraClick" data-amount="1">Kup +1 klik (200)</button>
+      <button class="buy-item btn" data-cost="500" data-effect="autoClick" data-amount="2">Kup +2 auto klik (500)</button>
     </details>
 
     <details class="panel">
       <summary>Misje</summary>
       <div id="missions">
-        <div>Wykonaj 10 kliknięć – <span id="mission1">0/10</span></div>
-        <div>Wydaj 500 punktów – <span id="mission2">0/500</span></div>
+        <div>Kliknij 10 razy – <span id="m1">0/10</span></div>
+        <div>Wydaj 500 pkt – <span id="m2">0/500</span></div>
       </div>
     </details>
   </div>
-
   <script src="main.js"></script>
 </body>
 </html>
