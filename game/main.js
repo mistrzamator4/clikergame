@@ -234,3 +234,4 @@ setInterval(() => {
 }, 1000);
 
 loadGame();
+}
