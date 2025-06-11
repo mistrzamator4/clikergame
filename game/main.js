@@ -31,7 +31,7 @@ let clickValue     = 1;
 let autoClickValue = 0;
 let exp            = 0;
 let level          = 0;
-};
+
 
 // Missions system
 const missionsData = [
