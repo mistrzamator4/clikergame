@@ -87,7 +87,7 @@ function saveGame() {
   
   };
 
-async function loadGame() {
+async function loadGame() 
   const docSnap = await getDoc(userDoc);
   if (docSnap.exists()) {
     const data = docSnap.data();
