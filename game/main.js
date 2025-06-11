@@ -83,7 +83,7 @@ function saveGame() {
     exp,
     level,
     missionsData
-  }).catch(console.error);
+  
 }
 
 async function loadGame() {
