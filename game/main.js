@@ -85,7 +85,7 @@ function saveGame() {
     level,
     missionsData
   
-}
+
 
 async function loadGame() {
   const docSnap = await getDoc(userDoc);
