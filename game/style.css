@@ -1,144 +1,109 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron&display=swap');
-
-* {
-  box-sizing: border-box;
-}
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
 
 body {
-  background: #0f0f18;
-  color: #0ff;
-  font-family: 'Orbitron', monospace, sans-serif;
   margin: 0;
-  padding: 20px;
+  background: #0f0f15;
+  color: #00ffea;
+  font-family: 'Orbitron', monospace, sans-serif;
   display: flex;
   justify-content: center;
+  align-items: flex-start;
   min-height: 100vh;
-  align-items: center;
+  padding: 20px;
 }
 
-.container {
-  max-width: 480px;
+#app {
+  max-width: 600px;
   width: 100%;
-  background: #111122;
+  background: #11111f;
+  border: 3px solid #00ffea;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 0 20px #0ff, 0 0 40px #0ff inset;
+  box-shadow: 0 0 15px #00ffea88;
 }
 
-h1, h2 {
+header {
   text-align: center;
-  text-shadow: 0 0 8px #0ff;
-  margin-bottom: 16px;
+  margin-bottom: 15px;
 }
 
-.score {
-  font-size: 48px;
-  text-align: center;
-  margin: 10px 0;
-  text-shadow: 0 0 12px #0ff;
+header h1 {
+  margin: 0 0 10px;
+  font-size: 2.5rem;
+  text-shadow: 0 0 10px #00ffea;
 }
 
-.exp-level {
-  text-align: center;
-  margin-bottom: 20px;
-  font-weight: 700;
-}
-
-.btn {
-  display: block;
-  width: 100%;
-  background: #222233;
-  border: none;
-  border-radius: 8px;
-  color: #0ff;
-  font-size: 18px;
-  margin: 8px 0;
-  padding: 12px 0;
-  cursor: pointer;
-  box-shadow: 0 0 8px #0ff;
-  transition: all 0.3s ease;
-  user-select: none;
-}
-
-.btn:hover {
-  background: #00ffff55;
-  box-shadow: 0 0 16px #0ff;
+.stats {
+  display: flex;
+  justify-content: space-around;
+  font-size: 1.1rem;
+  border-top: 1px solid #00ffea44;
+  padding-top: 10px;
 }
 
 .neon-btn {
-  text-shadow:
-    0 0 5px #0ff,
-    0 0 10px #0ff,
-    0 0 20px #0ff,
-    0 0 40px #0ff;
+  background: transparent;
+  border: 2px solid #00ffea;
+  color: #00ffea;
+  padding: 12px 20px;
+  margin: 8px 0;
+  font-size: 1.1rem;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 0 10px #00ffea88;
+  user-select: none;
 }
 
-.upgrades {
-  margin-bottom: 20px;
+.neon-btn:hover {
+  background: #00ffea;
+  color: #11111f;
+  box-shadow: 0 0 20px #00ffea;
 }
 
-.shop {
-  margin-top: 20px;
-  border-top: 1px solid #0ff;
-  padding-top: 10px;
+main section {
+  margin-top: 25px;
+}
+
+#shop-items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#missions ul, #achievements ul {
+  list-style: none;
+  padding-left: 0;
+  max-height: 150px;
+  overflow-y: auto;
+  border: 1px solid #00ffea55;
+  border-radius: 6px;
+  padding: 10px;
+  background: #11111fdd;
+}
+
+#missions li.completed {
+  text-decoration: line-through;
+  color: #4caf50;
+}
+
+#notification {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #00ffea;
+  color: #11111f;
+  padding: 15px 30px;
+  border-radius: 25px;
+  font-weight: 700;
+  font-size: 1.2rem;
+  box-shadow: 0 0 25px #00ffea;
+  opacity: 0.95;
+  pointer-events: none;
+  z-index: 9999;
 }
 
 .hidden {
   display: none;
 }
-
-.missions {
-  margin-bottom: 20px;
-  border-top: 1px solid #0ff;
-  padding-top: 10px;
-  color: #0ff;
-}
-
-.missions ul {
-  list-style: none;
-  padding: 0;
-}
-
-.missions li {
-  margin: 8px 0;
-  padding: 8px;
-  background: #001122;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.missions li.completed {
-  text-decoration: line-through;
-  color: #0a0;
-  background: #002200;
-  cursor: default;
-}
-
-.notifications {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  max-width: 280px;
-  z-index: 1000;
-}
-
-.notification {
-  background: #004455cc;
-  border-left: 5px solid #00ffff;
-  color: #0ff;
-  margin-bottom: 8px;
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-weight: bold;
-  box-shadow: 0 0 8px #0ff;
-  animation: fadeinout 4s ease forwards;
-}
-
-@keyframes fadeinout {
-  0%   {opacity: 0; transform: translateX(100%);}
-  10%  {opacity: 1; transform: translateX(0);}
-  90%  {opacity: 1;}
-  100% {opacity: 0; transform: translateX(100%);}
-}
-
