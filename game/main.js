@@ -23,6 +23,7 @@ if (!playerId) {
   playerId = Math.random().toString(36).substring(2, 10);
   localStorage.setItem('playerId', playerId);
 }
+{
 const userDoc = doc(db, "players", playerId);
 
 let score          = 0;
